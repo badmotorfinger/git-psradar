@@ -82,24 +82,27 @@ function Get-StatusString($porcelainString) {
 			Conflict = 0;
 		}
 	}
-	$porcelainString.Split([Environment]::NewLine) | % {
-		if ($_[0] -eq 'R') { $results.Staged.Renamed++; }
-		elseif ($_[0] -eq 'A') { $results.Staged.Added++ }
-		elseif ($_[0] -eq 'D') { $results.Staged.Deleted++ }
-		elseif ($_[0] -eq 'M') { $results.Staged.Modified++ }
-		elseif ($_[0] -eq 'C') { $results.Staged.Copied++ }
+	
+	if ($porcelainString -ne '' -and $porcelainStatus -ne $null) {
+	
+		$porcelainString.Split([Environment]::NewLine) | % {
+			if ($_[0] -eq 'R') { $results.Staged.Renamed++; }
+			elseif ($_[0] -eq 'A') { $results.Staged.Added++ }
+			elseif ($_[0] -eq 'D') { $results.Staged.Deleted++ }
+			elseif ($_[0] -eq 'M') { $results.Staged.Modified++ }
+			elseif ($_[0] -eq 'C') { $results.Staged.Copied++ }
 
-		if ($_[1] -eq 'R') { $results.Unstaged.Renamed++ }
-		elseif ($_[1] -eq 'D') { $results.Unstaged.Deleted++ }
-		elseif ($_[1] -eq 'M') { $results.Unstaged.Modified++ }
-		elseif ($_[1] -eq 'C') { $results.Unstaged.Copied++ }
-		if($_[1] -eq '?') { $results.Untracked.Added++ }
+			if ($_[1] -eq 'R') { $results.Unstaged.Renamed++ }
+			elseif ($_[1] -eq 'D') { $results.Unstaged.Deleted++ }
+			elseif ($_[1] -eq 'M') { $results.Unstaged.Modified++ }
+			elseif ($_[1] -eq 'C') { $results.Unstaged.Copied++ }
+			if($_[1] -eq '?') { $results.Untracked.Added++ }
 
-		elseif ($_[1] -eq 'U') { $results.Conflicted.ConflictUs++ }
-		elseif ($_[1] -eq 'T') { $results.Conflicted.ConflictThem++ }
-		elseif ($_[1] -eq 'B') { $results.Conflicted.Conflict++ }
+			elseif ($_[1] -eq 'U') { $results.Conflicted.ConflictUs++ }
+			elseif ($_[1] -eq 'T') { $results.Conflicted.ConflictThem++ }
+			elseif ($_[1] -eq 'B') { $results.Conflicted.Conflict++ }
+		}
 	}
-
 	return $results
 }
 
@@ -164,12 +167,12 @@ function Show-PsRadar {
 	$repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1)
 	$porcelainStatus = git status --porcelain
 
-	$status = Get-StatusString $porcelainStatus
-
 	Write-Host $rightArrow -NoNewline -ForegroundColor Green
 	Write-Host " $repoName/" -NoNewline -ForegroundColor DarkCyan
 	Write-Host " git:$branch" -NoNewline -ForegroundColor DarkGray
 
+	$status = Get-StatusString $porcelainStatus
+	
 	Get-Staged $status.Conflicted Yellow
 	Get-Staged $status.Staged Green
 	Get-Staged $status.Unstaged Magenta
