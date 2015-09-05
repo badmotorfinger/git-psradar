@@ -22,7 +22,7 @@ With a black background
 
 ## Installation
 
-Download the Git-PsRadar.psm1 file, put it in a folder called Git-PsRadar and copy the folder it to your PowerShell module directory.The default location for this is .\WindowsPowerShell\Modules (relative to your Documents folder). You can also extract it to another directory listed in your $env:PSModulePath. The full installation path should be **\Documents\WindowsPowerShell\Modules\GitPsRadar\Git-PsRadar.psm1**
+Download the Git-PsRadar.psm1 file, put it in a folder called Git-PsRadar and copy the folder it to your PowerShell module directory.The default location for this is .\WindowsPowerShell\Modules (relative to your Documents folder). You can also extract it to another directory listed in your $env:PSModulePath. The full installation path should be **\Documents\WindowsPowerShell\Modules\Git-PsRadar\Git-PsRadar.psm1**
 
 Assuming you want Git-PsRadar to be avilable in every PowerShell session, open your profile script located at '$env:USERPROFILE\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1' and add the following line.
 
