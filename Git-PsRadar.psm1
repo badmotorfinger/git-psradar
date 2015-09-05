@@ -2,57 +2,15 @@
 
 .SYNOPSIS
 
-   Tracks your most used directories, based on 'frecency'. This is done by storing your CD command history and ranking it over time.
+   A heads up display for git. A port of https://github.com/michaeldfallen/git-radar
 
 .DESCRIPTION
 
-    After  a  short  learning  phase, z will take you to the most 'frecent'
-    directory that matches the regex given on the command line.
-
-.PARAMETER JumpPath
-
-A regular expression of the directory name to jump to.
-
-.PARAMETER Option
-
-Frecency - Match by frecency (default)
-Rank - Match by rank only
-Time - Match by recent access only
-List - List only
-CurrentDirectory - Restrict matches to subdirectories of the current directory
-
-.PARAMETER $ProviderDrives
-
-A comma separated string of drives to match on. If none is specified, it will use a drive list from the currently selected provider.
-
-For example, the following command will run the regular expression 'foo' against all folder names where the drive letters in your history match HKLM:\ C:\ or D:\
-
-z foo -p HKLM,C,D
-
-.PARAMETER $Remove
-
-Remove the current directory from the datafile
-
-.NOTES
-
-Current PowerShell implementation is very crude and does not yet support all of the options of the original z bash script.
-Although tracking of frequently used directories is obtained through the continued use of the "cd" command, the Windows registry is also scanned for frequently accessed paths.
+    Provides an at-a-glance information about your git repo.
 
 .LINK
 
-   https://github.com/vincpa/z
-
-.EXAMPLE
-
-CD to the most frecent directory matching 'foo'
-
-z foo
-
-.EXAMPLE
-
-CD to the most recently accessed directory matching 'foo'
-
-z foo -o Time
+   https://github.com/vincpa/git-psradar
 
 #>
 $upArrow 	= ([Convert]::ToChar(9650))
