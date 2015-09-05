@@ -91,7 +91,7 @@ function Write-GitStatus($count, $symbol, $color) {
 # Does not raise an error when outside of a git repo
 function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).Path)) {
 
-	if ($directoryInfo -eq $null) { return $false; }
+	if ($directoryInfo -eq $null) { return }
 
 	$gs = $directoryInfo.GetDirectories(".git");
 
@@ -99,38 +99,45 @@ function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).
 	{
 		return Test-GitRepo($directoryInfo.Parent);
 	}
-	return $true;
+	return $directoryInfo.FullName;
 }
 
 function Show-PsRadar {
 
-	#git symbolic-ref --short HEAD
+	$currentPath = ([System.IO.DirectoryInfo](Get-Location).Path)
 
-    if((Test-GitRepo)) {
+  $gitRepoPath = Test-GitRepo;
 
-      $currentBranch = git branch --contains HEAD
+  if($gitRepoPath -ne $null) {
+	  
+    $gitResults = @{ 
+				GitRoot = git rev-parse --show-toplevel;
+				PorcelainStatus = git status --porcelain;
+			}    
+    
+		$currentBranch = git branch --contains HEAD
 
-      if ($currentBranch -ne $NULL) {
-        if ($currentBranch[2] -eq '(') {
-          $branch = $currentBranch.Substring(2)
-        } else {
-          $branch = '(' + $currentBranch.Substring(2) + ')'
-        }
+    if ($currentBranch -ne $NULL) {
+      if ($currentBranch[2] -eq '(') {
+        $branch = $currentBranch.Substring(2)
+      } else {
+        $branch = '(' + $currentBranch.Substring(2) + ')'
       }
+    }
 	} else {
 		return;
 	}
 
-	$gitRoot = git rev-parse --show-toplevel
-	$repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1)
-	$porcelainStatus = git status --porcelain
+  $gitRoot = $gitResults.GitRoot
+	$repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1) + $currentPath.FullName.Replace('\', '/').Replace($gitRoot, '')
+  $porcelainStatus = $gitResults.PorcelainStatus
 
 	Write-Host $rightArrow -NoNewline -ForegroundColor Green
 	Write-Host " $repoName/" -NoNewline -ForegroundColor DarkCyan
 	Write-Host " git:$branch" -NoNewline -ForegroundColor DarkGray
 
 	$status = Get-StatusString $porcelainStatus
-	
+
 	Get-Staged $status.Conflicted Yellow
 	Get-Staged $status.Staged Green
 	Get-Staged $status.Unstaged Magenta
