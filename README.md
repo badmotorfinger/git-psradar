@@ -8,11 +8,11 @@ The most useful prompt I have seen for working with git repositories, I just had
 
 Standard prompt
 
-![PowerShell Prompt 1](https://github.com/vincpa/git-psradar/raw/master/images/basic-usage.png)
+![PowerShell Prompt 1](https://raw.githubusercontent.com/vincpa/git-psradar/master/images/basic-usage.png)
 
 Standard prompt in a subdirectory of a git repo
 
-![PowerShell Prompt 2](https://github.com/vincpa/git-psradar/raw/master/images/repo-relative-path.png)
+![PowerShell Prompt 2](https://raw.githubusercontent.com/vincpa/git-psradar/master/images/repo-relative-path.png)
 
 ## Current Feature Set
 
