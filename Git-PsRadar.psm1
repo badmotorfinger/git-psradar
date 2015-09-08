@@ -2,57 +2,15 @@
 
 .SYNOPSIS
 
-   Tracks your most used directories, based on 'frecency'. This is done by storing your CD command history and ranking it over time.
+   A heads up display for git. A port of https://github.com/michaeldfallen/git-radar
 
 .DESCRIPTION
 
-    After  a  short  learning  phase, z will take you to the most 'frecent'
-    directory that matches the regex given on the command line.
-
-.PARAMETER JumpPath
-
-A regular expression of the directory name to jump to.
-
-.PARAMETER Option
-
-Frecency - Match by frecency (default)
-Rank - Match by rank only
-Time - Match by recent access only
-List - List only
-CurrentDirectory - Restrict matches to subdirectories of the current directory
-
-.PARAMETER $ProviderDrives
-
-A comma separated string of drives to match on. If none is specified, it will use a drive list from the currently selected provider.
-
-For example, the following command will run the regular expression 'foo' against all folder names where the drive letters in your history match HKLM:\ C:\ or D:\
-
-z foo -p HKLM,C,D
-
-.PARAMETER $Remove
-
-Remove the current directory from the datafile
-
-.NOTES
-
-Current PowerShell implementation is very crude and does not yet support all of the options of the original z bash script.
-Although tracking of frequently used directories is obtained through the continued use of the "cd" command, the Windows registry is also scanned for frequently accessed paths.
+    Provides an at-a-glance information about your git repo.
 
 .LINK
 
-   https://github.com/vincpa/z
-
-.EXAMPLE
-
-CD to the most frecent directory matching 'foo'
-
-z foo
-
-.EXAMPLE
-
-CD to the most recently accessed directory matching 'foo'
-
-z foo -o Time
+   https://github.com/vincpa/git-psradar
 
 #>
 $upArrow 	= ([Convert]::ToChar(9650))
@@ -82,24 +40,27 @@ function Get-StatusString($porcelainString) {
 			Conflict = 0;
 		}
 	}
-	$porcelainString.Split([Environment]::NewLine) | % {
-		if ($_[0] -eq 'R') { $results.Staged.Renamed++; }
-		elseif ($_[0] -eq 'A') { $results.Staged.Added++ }
-		elseif ($_[0] -eq 'D') { $results.Staged.Deleted++ }
-		elseif ($_[0] -eq 'M') { $results.Staged.Modified++ }
-		elseif ($_[0] -eq 'C') { $results.Staged.Copied++ }
+	
+	if ($porcelainString -ne '' -and $porcelainStatus -ne $null) {
+	
+		$porcelainString.Split([Environment]::NewLine) | % {
+			if ($_[0] -eq 'R') { $results.Staged.Renamed++; }
+			elseif ($_[0] -eq 'A') { $results.Staged.Added++ }
+			elseif ($_[0] -eq 'D') { $results.Staged.Deleted++ }
+			elseif ($_[0] -eq 'M') { $results.Staged.Modified++ }
+			elseif ($_[0] -eq 'C') { $results.Staged.Copied++ }
 
-		if ($_[1] -eq 'R') { $results.Unstaged.Renamed++ }
-		elseif ($_[1] -eq 'D') { $results.Unstaged.Deleted++ }
-		elseif ($_[1] -eq 'M') { $results.Unstaged.Modified++ }
-		elseif ($_[1] -eq 'C') { $results.Unstaged.Copied++ }
-		if($_[1] -eq '?') { $results.Untracked.Added++ }
+			if ($_[1] -eq 'R') { $results.Unstaged.Renamed++ }
+			elseif ($_[1] -eq 'D') { $results.Unstaged.Deleted++ }
+			elseif ($_[1] -eq 'M') { $results.Unstaged.Modified++ }
+			elseif ($_[1] -eq 'C') { $results.Unstaged.Copied++ }
+			if($_[1] -eq '?') { $results.Untracked.Added++ }
 
-		elseif ($_[1] -eq 'U') { $results.Conflicted.ConflictUs++ }
-		elseif ($_[1] -eq 'T') { $results.Conflicted.ConflictThem++ }
-		elseif ($_[1] -eq 'B') { $results.Conflicted.Conflict++ }
+			elseif ($_[1] -eq 'U') { $results.Conflicted.ConflictUs++ }
+			elseif ($_[1] -eq 'T') { $results.Conflicted.ConflictThem++ }
+			elseif ($_[1] -eq 'B') { $results.Conflicted.Conflict++ }
+		}
 	}
-
 	return $results
 }
 
@@ -130,7 +91,7 @@ function Write-GitStatus($count, $symbol, $color) {
 # Does not raise an error when outside of a git repo
 function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).Path)) {
 
-	if ($directoryInfo -eq $null) { return $false; }
+	if ($directoryInfo -eq $null) { return }
 
 	$gs = $directoryInfo.GetDirectories(".git");
 
@@ -138,37 +99,44 @@ function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).
 	{
 		return Test-GitRepo($directoryInfo.Parent);
 	}
-	return $true;
+	return $directoryInfo.FullName;
 }
 
 function Show-PsRadar {
 
-	#git symbolic-ref --short HEAD
+	$currentPath = ([System.IO.DirectoryInfo](Get-Location).Path)
 
-    if((Test-GitRepo)) {
+  $gitRepoPath = Test-GitRepo;
 
-      $currentBranch = git branch --contains HEAD
+  if($gitRepoPath -ne $null) {
+	  
+    $gitResults = @{ 
+				GitRoot = git rev-parse --show-toplevel;
+				PorcelainStatus = git status --porcelain;
+			}    
+    
+		$currentBranch = (git branch --contains HEAD).Split([Environment]::NewLine)[0]
 
-      if ($currentBranch -ne $NULL) {
-        if ($currentBranch[2] -eq '(') {
-          $branch = $currentBranch.Substring(2)
-        } else {
-          $branch = '(' + $currentBranch.Substring(2) + ')'
-        }
+    if ($currentBranch -ne $NULL) {
+      if ($currentBranch[2] -eq '(') {
+        $branch = $currentBranch.Substring(2)
+      } else {
+        $branch = '(' + $currentBranch.Substring(2) + ')'
       }
+    }
 	} else {
 		return;
 	}
 
-	$gitRoot = git rev-parse --show-toplevel
-	$repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1)
-	$porcelainStatus = git status --porcelain
-
-	$status = Get-StatusString $porcelainStatus
+  $gitRoot = $gitResults.GitRoot
+	$repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1) + $currentPath.FullName.Replace('\', '/').Replace($gitRoot, '')
+  $porcelainStatus = $gitResults.PorcelainStatus
 
 	Write-Host $rightArrow -NoNewline -ForegroundColor Green
 	Write-Host " $repoName/" -NoNewline -ForegroundColor DarkCyan
 	Write-Host " git:$branch" -NoNewline -ForegroundColor DarkGray
+
+	$status = Get-StatusString $porcelainStatus
 
 	Get-Staged $status.Conflicted Yellow
 	Get-Staged $status.Staged Green
