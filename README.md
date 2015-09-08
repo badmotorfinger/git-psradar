@@ -6,11 +6,13 @@ A (work-in-progress) PowerShell port of [git-radar](https://github.com/michaeldf
 
 The most useful prompt I have seen for working with git repositories, I just had to have it!
 
-With the standard PowerShell blue background
-![PowerShell Prompt 1](https://github.com/vincpa/git-psradar/raw/master/images/basic-usage.jpg)
+Standard prompt
 
-With a black background
-![PowerShell Prompt 2](https://github.com/vincpa/git-psradar/raw/master/images/basic-usage-blackbackground.jpg)
+![PowerShell Prompt 1](https://github.com/vincpa/git-psradar/raw/master/images/basic-usage.png)
+
+Standard prompt in a subdirectory of a git repo
+
+![PowerShell Prompt 2](https://github.com/vincpa/git-psradar/raw/master/images/repo-relative-path.png)
 
 ## Current Feature Set
 
