@@ -115,7 +115,7 @@ function Show-PsRadar {
 				PorcelainStatus = git status --porcelain;
 			}    
     
-		$currentBranch = git branch --contains HEAD
+		$currentBranch = (git branch --contains HEAD).Split([Environment]::NewLine)[0]
 
     if ($currentBranch -ne $NULL) {
       if ($currentBranch[2] -eq '(') {
