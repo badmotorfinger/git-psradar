@@ -115,33 +115,37 @@ function Show-PsRadar {
 				PorcelainStatus = git status --porcelain;
 			}    
     
-		$currentBranch = (git branch --contains HEAD).Split([Environment]::NewLine)[0]
-
-    if ($currentBranch -ne $NULL) {
+		$currentBranchString = (git branch --contains HEAD)
+    
+    if ($currentBranchString -ne $NULL) {
+      
+      $currentBranch = $currentBranchString.Split([Environment]::NewLine)[0]
+      
       if ($currentBranch[2] -eq '(') {
         $branch = $currentBranch.Substring(2)
       } else {
         $branch = '(' + $currentBranch.Substring(2) + ')'
       }
+    
+      $gitRoot = $gitResults.GitRoot
+    	$repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1) + $currentPath.FullName.Replace('\', '/').Replace($gitRoot, '')
+      $porcelainStatus = $gitResults.PorcelainStatus
+
+    	Write-Host $rightArrow -NoNewline -ForegroundColor Green
+    	Write-Host " $repoName/" -NoNewline -ForegroundColor DarkCyan
+    	Write-Host " git:$branch" -NoNewline -ForegroundColor DarkGray
+
+    	$status = Get-StatusString $porcelainStatus
+
+    	Get-Staged $status.Conflicted Yellow
+    	Get-Staged $status.Staged Green
+    	Get-Staged $status.Unstaged Magenta
+    	Get-Staged $status.Untracked Gray
+      
+      return $true
     }
-	} else {
-		return;
-	}
-
-  $gitRoot = $gitResults.GitRoot
-	$repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1) + $currentPath.FullName.Replace('\', '/').Replace($gitRoot, '')
-  $porcelainStatus = $gitResults.PorcelainStatus
-
-	Write-Host $rightArrow -NoNewline -ForegroundColor Green
-	Write-Host " $repoName/" -NoNewline -ForegroundColor DarkCyan
-	Write-Host " git:$branch" -NoNewline -ForegroundColor DarkGray
-
-	$status = Get-StatusString $porcelainStatus
-
-	Get-Staged $status.Conflicted Yellow
-	Get-Staged $status.Staged Green
-	Get-Staged $status.Unstaged Magenta
-	Get-Staged $status.Untracked Gray
+  }
+  return $false
 }
 
 Export-ModuleMember -Function Show-GitPsRadar, Test-GitRepo -WarningAction SilentlyContinue -WarningVariable $null
@@ -152,8 +156,7 @@ $originalPrompt = (Get-Item function:prompt).ScriptBlock
 function global:prompt {
 	
 	# Change the prompt as soon as we enter a git repository
-	if ((Test-GitRepo)) {
-		Show-PsRadar
+	if ((Test-GitRepo) -and (Show-PsRadar)) {
 		return "$ "
 	} else {
 		Invoke-Command $originalPrompt
