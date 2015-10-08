@@ -14,7 +14,7 @@
 
 #>
 $upArrow 	= ([Convert]::ToChar(9650))
-$rightArrow	= ([Convert]::ToChar(9658))
+$rightArrow	= ([Convert]::ToChar(26))
 
 function Get-StatusString($porcelainString) {
 	$results = @{
@@ -40,9 +40,9 @@ function Get-StatusString($porcelainString) {
 			Conflict = 0;
 		}
 	}
-	
+
 	if ($porcelainString -ne '' -and $porcelainStatus -ne $null) {
-	
+
 		$porcelainString.Split([Environment]::NewLine) | % {
 			if ($_[0] -eq 'R') { $results.Staged.Renamed++; }
 			elseif ($_[0] -eq 'A') { $results.Staged.Added++ }
@@ -109,26 +109,26 @@ function Show-PsRadar {
   $gitRepoPath = Test-GitRepo;
 
   if($gitRepoPath -ne $null) {
-	  
-    $gitResults = @{ 
+
+    $gitResults = @{
 				GitRoot = git rev-parse --show-toplevel;
 				PorcelainStatus = git status --porcelain;
-			}    
-    
-		$currentBranchString = (git branch --contains HEAD)
-    
+			}
+
+  	$currentBranchString = (git branch --contains HEAD)
+
     if ($currentBranchString -ne $NULL) {
-      
+
       $currentBranch = $currentBranchString.Split([Environment]::NewLine)[0]
-      
+
       if ($currentBranch[2] -eq '(') {
         $branch = $currentBranch.Substring(2)
       } else {
         $branch = '(' + $currentBranch.Substring(2) + ')'
       }
-    
+
       $gitRoot = $gitResults.GitRoot
-    	$repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1) + $currentPath.FullName.Replace('\', '/').Replace($gitRoot, '')
+      $repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1) + $currentPath.FullName.Replace('\', '/').Substring($gitRoot.Length)
       $porcelainStatus = $gitResults.PorcelainStatus
 
     	Write-Host $rightArrow -NoNewline -ForegroundColor Green
@@ -141,7 +141,7 @@ function Show-PsRadar {
     	Get-Staged $status.Staged Green
     	Get-Staged $status.Unstaged Magenta
     	Get-Staged $status.Untracked Gray
-      
+
       return $true
     }
   }
@@ -154,7 +154,7 @@ Export-ModuleMember -Function Show-GitPsRadar, Test-GitRepo -WarningAction Silen
 $originalPrompt = (Get-Item function:prompt).ScriptBlock
 
 function global:prompt {
-	
+
 	# Change the prompt as soon as we enter a git repository
 	if ((Test-GitRepo) -and (Show-PsRadar)) {
 		return "$ "
