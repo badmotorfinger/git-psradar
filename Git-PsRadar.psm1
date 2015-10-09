@@ -66,14 +66,14 @@ function Get-StatusString($porcelainString) {
 
 function Get-Staged($status, $color, $showNewFiles, $onlyShowNewFiles) {
 	$hasChanged = $false;
-	$hasChanged = $hasChanged -or (Write-GitStatus $status.Added 'A' $color)
-	$hasChanged = $hasChanged -or (Write-GitStatus $status.Renamed 'R' $color)
-	$hasChanged = $hasChanged -or (Write-GitStatus $status.Deleted 'D' $color)
-	$hasChanged = $hasChanged -or (Write-GitStatus $status.Modified 'M' $color)
-	$hasChanged = $hasChanged -or (Write-GitStatus $status.Copied 'C' $color)
-	$hasChanged = $hasChanged -or (Write-GitStatus $status.ConflictUs 'U' $color)
-	$hasChanged = $hasChanged -or (Write-GitStatus $status.ConflictThem 'T' $color)
-	$hasChanged = $hasChanged -or (Write-GitStatus $status.Conflict 'B' $color)
+	$hasChanged = (Write-GitStatus $status.Added 'A' $color) -or $hasChanged
+	$hasChanged = (Write-GitStatus $status.Renamed 'R' $color) -or $hasChanged
+	$hasChanged = (Write-GitStatus $status.Deleted 'D' $color) -or $hasChanged
+	$hasChanged = (Write-GitStatus $status.Modified 'M' $color) -or $hasChanged
+	$hasChanged = (Write-GitStatus $status.Copied 'C' $color) -or $hasChanged
+	$hasChanged = (Write-GitStatus $status.ConflictUs 'U' $color) -or $hasChanged
+	$hasChanged = (Write-GitStatus $status.ConflictThem 'T' $color) -or $hasChanged
+	$hasChanged = (Write-GitStatus $status.Conflict 'B' $color) -or $hasChanged
 	if ($hasChanged) {
 		Write-Host ' ' -NoNewline
 	}
