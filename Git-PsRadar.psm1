@@ -144,7 +144,9 @@ function Show-PsRadar($gitRepoPath, $currentPath) {
 Export-ModuleMember -Function Show-GitPsRadar, Test-GitRepo -WarningAction SilentlyContinue -WarningVariable $null
 
 # Get the existing prompt function
-$originalPrompt = (Get-Item function:prompt).ScriptBlock
+if ($script:origPrompt -eq $null) {
+    $script:origPrompt = (Get-Item function:prompt).ScriptBlock
+}
 
 function global:prompt {
 	
