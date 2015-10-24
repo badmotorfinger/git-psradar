@@ -102,6 +102,39 @@ function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).
 	return $directoryInfo.FullName;
 }
 
+function TimeToUpdate($lastUpdatePath) {
+
+    if ((Test-Path $lastUpdatePath)){
+        return (Get-Date).Subtract((Get-Item $lastUpdatePath).LastWriteTime).Minutes > 5
+    }
+    else {
+        return $true
+    }
+
+    return $false
+}
+
+function Begin-SilentFetch($gitRepoPath) {
+
+    if ($gitRepoPath -ne $null) {
+
+        Remove-Job -Name 'gitfetch' -Force -ErrorAction SilentlyContinue
+
+        $lastUpdatePath = $gitRepoPath + '\.git\lastupdatetime'
+
+        if (TimeToUpdate $lastUpdatePath) {
+
+            Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
+
+                Write-Host "fetching $gitRepoPath"
+                git -C $gitRepoPath --quiet
+                Write-Host "done"
+                echo $null >> $lastUpdatePath
+            }
+        }
+    }
+}
+
 function Show-PsRadar($gitRepoPath, $currentPath) {
 
     if($gitRepoPath -ne $null) {
@@ -138,6 +171,8 @@ function Show-PsRadar($gitRepoPath, $currentPath) {
     	    Get-Staged $status.Unstaged Magenta
     	    Get-Staged $status.Untracked Gray
 
+            Begin-SilentFetch $gitRepoPath
+
             return $true
         }
     }
@@ -164,4 +199,3 @@ function global:prompt {
 		Invoke-Command $Script:originalPrompt
 	}
 }
-
