@@ -104,48 +104,49 @@ function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).
 
 function Show-PsRadar {
 
-	$currentPath = ([System.IO.DirectoryInfo](Get-Location).Path)
+    $currentPath = ([System.IO.DirectoryInfo](Get-Location).Path)
 
-  $gitRepoPath = Test-GitRepo;
+    $gitRepoPath = Test-GitRepo;
 
-  if($gitRepoPath -ne $null) {
+    if($gitRepoPath -ne $null) {
 
-    $gitResults = @{
-				GitRoot = git rev-parse --show-toplevel;
-				PorcelainStatus = git status --porcelain;
-			}
+        $gitResults = @{
+		    GitRoot = git rev-parse --show-toplevel;
+			PorcelainStatus = git status --porcelain;
+        }
 
-  	$currentBranchString = (git branch --contains HEAD)
+  	    $currentBranchString = (git branch --contains HEAD)
 
-    if ($currentBranchString -ne $NULL) {
+        if ($currentBranchString -ne $NULL) {
 
-      $currentBranch = $currentBranchString.Split([Environment]::NewLine)[0]
+            $currentBranch = $currentBranchString.Split([Environment]::NewLine)[0]
 
-      if ($currentBranch[2] -eq '(') {
-        $branch = $currentBranch.Substring(2)
-      } else {
-        $branch = '(' + $currentBranch.Substring(2) + ')'
-      }
+            if ($currentBranch[2] -eq '(') {
+                $branch = $currentBranch.Substring(2)
+            } else {
+                $branch = '(' + $currentBranch.Substring(2) + ')'
+            }
 
-      $gitRoot = $gitResults.GitRoot
-      $repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1) + $currentPath.FullName.Replace('\', '/').Substring($gitRoot.Length)
-      $porcelainStatus = $gitResults.PorcelainStatus
+            $gitRoot = $gitResults.GitRoot
+            $repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1) + $currentPath.FullName.Replace('\', '/').Substring($gitRoot.Length)
+            $porcelainStatus = $gitResults.PorcelainStatus
 
-    	Write-Host $rightArrow -NoNewline -ForegroundColor Green
-    	Write-Host " $repoName/" -NoNewline -ForegroundColor DarkCyan
-    	Write-Host " git:$branch" -NoNewline -ForegroundColor DarkGray
+    	    Write-Host $rightArrow -NoNewline -ForegroundColor Green
+    	    Write-Host " $repoName/" -NoNewline -ForegroundColor DarkCyan
+    	    Write-Host " git:$branch" -NoNewline -ForegroundColor DarkGray
 
-    	$status = Get-StatusString $porcelainStatus
+    	    $status = Get-StatusString $porcelainStatus
 
-    	Get-Staged $status.Conflicted Yellow
-    	Get-Staged $status.Staged Green
-    	Get-Staged $status.Unstaged Magenta
-    	Get-Staged $status.Untracked Gray
+    	    Get-Staged $status.Conflicted Yellow
+    	    Get-Staged $status.Staged Green
+    	    Get-Staged $status.Unstaged Magenta
+    	    Get-Staged $status.Untracked Gray
 
-      return $true
+            return $true
+        }
     }
-  }
-  return $false
+    
+    return $false
 }
 
 Export-ModuleMember -Function Show-GitPsRadar, Test-GitRepo -WarningAction SilentlyContinue -WarningVariable $null
