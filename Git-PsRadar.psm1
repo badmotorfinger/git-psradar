@@ -102,16 +102,12 @@ function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).
 	return $directoryInfo.FullName;
 }
 
-function Show-PsRadar {
-
-    $currentPath = ([System.IO.DirectoryInfo](Get-Location).Path)
-
-    $gitRepoPath = Test-GitRepo;
+function Show-PsRadar($gitRepoPath, $currentPath) {
 
     if($gitRepoPath -ne $null) {
 
         $gitResults = @{
-		    GitRoot = git rev-parse --show-toplevel;
+		    GitRoot = $gitRepoPath;
 			PorcelainStatus = git status --porcelain;
         }
 
@@ -128,7 +124,7 @@ function Show-PsRadar {
             }
 
             $gitRoot = $gitResults.GitRoot
-            $repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1) + $currentPath.FullName.Replace('\', '/').Substring($gitRoot.Length)
+            $repoName = ($gitRoot.Substring($gitRoot.LastIndexOf('\') + 1) + $currentPath.FullName.Substring($gitRoot.Length)).Replace('\', '/')
             $porcelainStatus = $gitResults.PorcelainStatus
 
     	    Write-Host $rightArrow -NoNewline -ForegroundColor Green
@@ -156,8 +152,11 @@ $originalPrompt = (Get-Item function:prompt).ScriptBlock
 
 function global:prompt {
 
+    $currentPath = ([System.IO.DirectoryInfo](Get-Location).Path)
+	$gitRepoPath = Test-GitRepo $currentPath
+
 	# Change the prompt as soon as we enter a git repository
-	if ((Test-GitRepo) -and (Show-PsRadar)) {
+	if ((Test-GitRepo) -and (Show-PsRadar $gitRepoPath $currentPath)) {
 		return "$ "
 	} else {
 		Invoke-Command $originalPrompt
