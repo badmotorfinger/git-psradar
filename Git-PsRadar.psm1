@@ -102,9 +102,7 @@ function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).
 	return $directoryInfo.FullName.Replace('\', '/');
 }
 
-function Show-PsRadar($gitRepoPath) {
-
-	$currentPath = ([System.IO.DirectoryInfo](Get-Location).Path)
+function Show-PsRadar($gitRepoPath, $currentPath) {
 
     if($gitRepoPath -ne $null) {
 	  
@@ -150,10 +148,12 @@ $originalPrompt = (Get-Item function:prompt).ScriptBlock
 
 function global:prompt {
 	
-	$gitRepoPath = Test-GitRepo
+    $currentPath = ([System.IO.DirectoryInfo](Get-Location).Path)
+	$gitRepoPath = Test-GitRepo $currentPath
+
 	# Change the prompt as soon as we enter a git repository
 	if ($gitRepoPath -ne $null) {
-		Show-PsRadar $gitRepoPath
+		Show-PsRadar $gitRepoPath $currentPath
 		return "$ "
 	} else {
 		Invoke-Command $originalPrompt
