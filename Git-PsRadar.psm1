@@ -106,31 +106,32 @@ function Show-PsRadar($gitRepoPath) {
 
 	$currentPath = ([System.IO.DirectoryInfo](Get-Location).Path)
 
-  if($gitRepoPath -ne $null) {
+    if($gitRepoPath -ne $null) {
 	  
-    $gitResults = @{ 
-				GitRoot = $gitRepoPath;
-				PorcelainStatus = git status --porcelain;
-			}    
+        $gitResults = @{ 
+		    GitRoot = $gitRepoPath;
+			PorcelainStatus = git status --porcelain;
+		}    
     
 		$currentBranch = (git branch --contains HEAD).Split([Environment]::NewLine)[0]
 
-    if ($currentBranch -ne $NULL) {
-      if ($currentBranch[2] -eq '(') {
-        $branch = $currentBranch.Substring(2)
-      } else {
-        $branch = '(' + $currentBranch.Substring(2) + ')'
-      }
-    }
+        if ($currentBranch -ne $NULL) {
+            if ($currentBranch[2] -eq '(') {
+                $branch = $currentBranch.Substring(2)
+            } else {
+                $branch = '(' + $currentBranch.Substring(2) + ')'
+            }
+        }
+
 	} else {
 		return;
 	}
 
-  $gitRoot = $gitResults.GitRoot
+    $gitRoot = $gitResults.GitRoot
 	$repoName = $gitRoot.Substring($gitRoot.LastIndexOf('/') + 1) + $currentPath.FullName.Replace('\', '/').Replace($gitRoot, '')
-  $porcelainStatus = $gitResults.PorcelainStatus
+    $porcelainStatus = $gitResults.PorcelainStatus
 
-	Write-Host $rightArrow -NoNewline -ForegroundColor Green
+    Write-Host $rightArrow -NoNewline -ForegroundColor Green
 	Write-Host " $repoName/" -NoNewline -ForegroundColor DarkCyan
 	Write-Host " git:$branch" -NoNewline -ForegroundColor DarkGray
 
@@ -142,7 +143,7 @@ function Show-PsRadar($gitRepoPath) {
 	Get-Staged $status.Untracked Gray
 }
 
-#Export-ModuleMember -Function Show-GitPsRadar, Test-GitRepo -WarningAction SilentlyContinue -WarningVariable $null
+Export-ModuleMember -Function Show-GitPsRadar, Test-GitRepo -WarningAction SilentlyContinue -WarningVariable $null
 
 # Get the existing prompt function
 $originalPrompt = (Get-Item function:prompt).ScriptBlock
