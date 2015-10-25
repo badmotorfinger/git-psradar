@@ -6,21 +6,22 @@ A (work-in-progress) PowerShell port of [git-radar](https://github.com/michaeldf
 
 The most useful prompt I have seen for working with git repositories, I just had to have it!
 
-Standard prompt
+### Standard prompt
 
-![PowerShell Prompt 1](https://raw.githubusercontent.com/vincpa/git-psradar/master/images/basic-usage.png)
+The Git Radar prompt will automatically toggle after you import the `Git-PsRadar` module in to your session and `cd` in to a git repository.
 
-Standard prompt in a subdirectory of a git repo
+![PowerShellPrompt]
 
-![PowerShell Prompt 2](https://raw.githubusercontent.com/vincpa/git-psradar/master/images/repo-relative-path.png)
+### Local commits status
 
-## Current Feature Set
+The prompt will show you the difference in commits between your branch and the
+remote your branch is tracking. The examples below assume you are checked out on
+`sfetch` and are tracking `origin/silent-fetch`.
 
-1. Automatic prompt - Once you import the `Git-PsRadar` module in to your session, the prompt will automatically change once you enter a git repository and revert back to the standard prompt when you go to a different directory.
-
-2. Detect unstaged and staged changes. This includes all status types.
-
-3. Coloured indicators for staged, unstaged and conflicted items.
+Prompt              | Meaning
+--------------------|--------
+![LocalBranchAhead]  | We have 3 commits to push up
+![RemoteBranchAhead] | We have 1 commit to pull down
 
 ## Installation
 
@@ -35,3 +36,7 @@ If the file Microsoft.PowerShell_profile.ps1 does not exist, you can simply crea
 ## What's next
 
 I'll be working on this script as time permits, but I am keen to bring across all features, especially background fetch.
+
+[PowerShellPrompt]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/basic-usage.png
+[LocalBranchAhead]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/local-branch-ahead.PNG
+[RemoteBranchAhead]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/remote-branch-ahead.PNG
