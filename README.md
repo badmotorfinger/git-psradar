@@ -35,3 +35,4 @@ If the file Microsoft.PowerShell_profile.ps1 does not exist, you can simply crea
 ## What's next
 
 I'll be working on this script as time permits, but I am keen to bring across all features, especially background fetch.
+
