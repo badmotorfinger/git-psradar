@@ -13,6 +13,7 @@
    https://github.com/vincpa/git-psradar
 
 #>
+$upDownArrow = ([Convert]::ToChar(23))
 $upArrow 	= ([Convert]::ToChar(24))
 $downArrow 	= ([Convert]::ToChar(25))
 $rightArrow	= ([Convert]::ToChar(26))
@@ -147,20 +148,25 @@ function Get-CommitStatus($currentBranch) {
 	$remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
 				
 	# Get remote commit count ahead of current branch
-    $remoteAheadCount = git rev-list --right-only --count "$remoteName/$remoteBranchName"...HEAD
-    $localAheadCount = git rev-list --left-only --count "$remoteName/$remoteBranchName"...HEAD
+    $remoteAheadCount = git rev-list --left-only --count $remoteName'/'$remoteBranchName...HEAD
+    $localAheadCount = git rev-list --right-only --count $remoteName'/'$remoteBranchName...HEAD
 
-    $remoteCounts = @{
-        RemoteAhead = $remoteAheadCount;
-    }
+    $result = ""
+    if ($remoteAheadCount -gt 0 -and $localAheadCount -gt 0) {
+        $result = " #white#$remoteAheadCount#yellow#$upDownArrow#white#$localAheadCount"
+    } else {
+        $remoteCounts = @{
+            RemoteAhead = $remoteAheadCount;
+        }
             
-    $result = Get-Staged " " $remoteCounts Green
+        $result = Get-Staged " " $remoteCounts Green
 
-    $remoteCounts = @{
-        LocalAhead = $localAheadCount;
-    }
+        $remoteCounts = @{
+            LocalAhead = $localAheadCount;
+        }
     
-    $result = (Get-Staged $result $remoteCounts Magenta).TrimEnd()
+        $result = (Get-Staged $result $remoteCounts Magenta).TrimEnd()
+    }
     
     return "#darkgray#git:($currentBranch$result#darkgray#)"
 }
