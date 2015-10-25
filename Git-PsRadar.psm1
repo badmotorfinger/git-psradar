@@ -105,7 +105,7 @@ function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).
 function TimeToUpdate($lastUpdatePath) {
 
     if ((Test-Path $lastUpdatePath)){
-        return (Get-Date).Subtract((Get-Item $lastUpdatePath).LastWriteTime).Minutes > 5
+        return (Get-Date).Subtract((Get-Item $lastUpdatePath).LastWriteTime).TotalMinutes -gt 5
     }
     else {
         return $true
