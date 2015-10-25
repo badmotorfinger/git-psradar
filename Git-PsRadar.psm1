@@ -74,6 +74,9 @@ function Get-Staged($status, $color, $showNewFiles, $onlyShowNewFiles) {
 	$hasChanged = (Write-GitStatus $status.ConflictUs 'U' $color) -or $hasChanged
 	$hasChanged = (Write-GitStatus $status.ConflictThem 'T' $color) -or $hasChanged
 	$hasChanged = (Write-GitStatus $status.Conflict 'B' $color) -or $hasChanged
+    $hasChanged = (Write-GitStatus $status.RemoteAhead '%' $color) -or $hasChanged
+    $hasChanged = (Write-GitStatus $status.LocalAhead '^' $color) -or $hasChanged
+
 	if ($hasChanged) {
 		Write-Host ' ' -NoNewline
 	}
@@ -124,11 +127,10 @@ function Begin-SilentFetch($gitRepoPath) {
 
         if (TimeToUpdate $lastUpdatePath) {
 
-            Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
-
+            #Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
                 echo $null >> $lastUpdatePath
-                git -C $gitRepoPath --quiet
-            }
+                git -C $gitRepoPath fetch --quiet
+            #}
         }
     }
 }
@@ -173,10 +175,27 @@ function Show-PsRadar($gitRepoPath, $currentPath) {
     	    Get-Staged $status.Unstaged Magenta
     	    Get-Staged $status.Untracked Gray
 
-            # Get remote commit count ahead of current branch
-            #git rev-list --left-only --count origin/silent-fetch-wip...HEAD
+            # get remote name of the current branch, i.e. origin
+			$remoteName = git config --get "branch.$currecd dev\ntBranch.remote"
+				
+			$remoteBranchName = git config --get "branch.$currentBranch.merge"
+			$remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
+				
+			# Get remote commit count ahead of current branch
+            $remoteAheadCount = git rev-list --right-only --count "$remoteName/$remoteBranchName"...HEAD
+            $localAheadCount = git rev-list --left-only --count "$remoteName/$remoteBranchName"...HEAD
 
-            Begin-SilentFetch $gitRepoPath
+            $remoteCounts = @{
+                RemoteAhead = $remoteAheadCount;
+            }
+            
+            Get-Staged $remoteCounts Green
+            $remoteCounts = @{
+                LocalAhead = $localAheadCount;
+            }
+            Get-Staged $remoteCounts Magenta
+
+            #Begin-SilentFetch $gitRepoPath
 
             return $true
         }
