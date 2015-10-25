@@ -1,4 +1,4 @@
-<#
+﻿<#
 
 .SYNOPSIS
 
@@ -143,18 +143,20 @@ function Show-PsRadar($gitRepoPath, $currentPath) {
         }
         
         #Get current branch name
-        #git symbolic-ref --short HEAD
-  	    $currentBranchString = (git branch --contains HEAD)
+		$currentBranchString = git symbolic-ref --short HEAD
+  	    #$currentBranchString = (git branch --contains HEAD)
 
         if ($currentBranchString -ne $NULL) {
+			
+			$currentBranch = $currentBranchString
+			$branch = "($currentBranch)"
+            #$currentBranch = $currentBranchString.Split([Environment]::NewLine)[0]
 
-            $currentBranch = $currentBranchString.Split([Environment]::NewLine)[0]
-
-            if ($currentBranch[2] -eq '(') {
-                $branch = $currentBranch.Substring(2)
-            } else {
-                $branch = '(' + $currentBranch.Substring(2) + ')'
-            }
+            #if ($currentBranch[2] -eq '(') {
+            #    $branch = $currentBranch.Substring(2)
+            #} else {
+            #    $branch = '(' + $currentBranch.Substring(2) + ')'
+            #}
 
             $gitRoot = $gitResults.GitRoot
             $repoName = ($gitRoot.Substring($gitRoot.LastIndexOf('\') + 1) + $currentPath.FullName.Substring($gitRoot.Length)).Replace('\', '/')
