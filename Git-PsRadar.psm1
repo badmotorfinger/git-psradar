@@ -13,8 +13,42 @@
    https://github.com/vincpa/git-psradar
 
 #>
-$upArrow 	= ([Convert]::ToChar(9650))
+$upDownArrow = ([Convert]::ToChar(23))
+$upArrow 	= ([Convert]::ToChar(24))
+$downArrow 	= ([Convert]::ToChar(25))
 $rightArrow	= ([Convert]::ToChar(26))
+
+function Write-Chost($message = ""){
+    
+	if ( $message ){
+
+		# predefined Color Array
+		$colors = @("black","blue","cyan","darkblue","darkcyan","darkgray","darkgreen","darkmagenta","darkred","darkyellow","gray","green","magenta","red","white","yellow");	
+
+		# Set CurrentColor to default Foreground Color
+		$CurrentColor = $defaultFGColor
+
+		# Split Messages
+		$message = $message.split("#")
+
+		# Iterate through splitted array
+		foreach( $string in $message ){
+            if ($string) {
+			    # If a string between #-Tags is equal to any predefined color, and is equal to the defaultcolor: set current color
+			    if ( $colors -contains $string.tolower()){
+				    $CurrentColor = $string          
+			    }else{
+				    # If string is a output message, than write string with current color (with no line break)
+                    if ($CurrentColor -ne -1) {
+				        write-host -nonewline -f $CurrentColor $string
+                    } else {
+                        write-host -nonewline $string
+                    }
+			    }
+            }
+		}
+	}
+}
 
 function Get-StatusString($porcelainString) {
 	$results = @{
@@ -64,28 +98,82 @@ function Get-StatusString($porcelainString) {
 	return $results
 }
 
-function Get-Staged($status, $color, $showNewFiles, $onlyShowNewFiles) {
-	$hasChanged = $false;
-	$hasChanged = (Write-GitStatus $status.Added 'A' $color) -or $hasChanged
-	$hasChanged = (Write-GitStatus $status.Renamed 'R' $color) -or $hasChanged
-	$hasChanged = (Write-GitStatus $status.Deleted 'D' $color) -or $hasChanged
-	$hasChanged = (Write-GitStatus $status.Modified 'M' $color) -or $hasChanged
-	$hasChanged = (Write-GitStatus $status.Copied 'C' $color) -or $hasChanged
-	$hasChanged = (Write-GitStatus $status.ConflictUs 'U' $color) -or $hasChanged
-	$hasChanged = (Write-GitStatus $status.ConflictThem 'T' $color) -or $hasChanged
-	$hasChanged = (Write-GitStatus $status.Conflict 'B' $color) -or $hasChanged
-	if ($hasChanged) {
-		Write-Host ' ' -NoNewline
+function Get-Staged($seed, $status, $color, $showNewFiles, $onlyShowNewFiles) {
+	
+	$result = (Get-StatusCountFragment $seed   $status.Added        'A' $color)
+	$result = (Get-StatusCountFragment $result $status.Renamed      'R' $color)
+	$result = (Get-StatusCountFragment $result $status.Deleted      'D' $color)
+	$result = (Get-StatusCountFragment $result $status.Modified     'M' $color)
+	$result = (Get-StatusCountFragment $result $status.Copied       'C' $color)
+	$result = (Get-StatusCountFragment $result $status.ConflictUs   'U' $color)
+	$result = (Get-StatusCountFragment $result $status.ConflictThem 'T' $color)
+	$result = (Get-StatusCountFragment $result $status.Conflict     'B' $color)
+    $result = (Get-StatusCountFragment $result $status.RemoteAhead  $downArrow $color)
+    $result = (Get-StatusCountFragment $result $status.LocalAhead   $upArrow $color)
+
+	if (-not [string]::IsNullOrWhiteSpace($result) -and $seed.Length -ne $result.Length) {
+		$result += ' '
 	}
+    return $result
 }
 
-function Write-GitStatus($count, $symbol, $color) {
+function Get-StatusCountFragment($seed, $count, $symbol, $color) {
 	if ($count -gt 0) {
-		Write-Host $count -ForegroundColor White -NoNewline
-		Write-Host $symbol -ForegroundColor $color -NoNewline
-		return $true;
+		return "$seed#white#$count#$color#$symbol"
 	}
-	return $false;
+	return $seed;
+}
+
+function Get-FilesStatus() {
+    
+    $porcelainStatus = git status --porcelain;
+
+    $status = Get-StatusString $porcelainStatus
+
+    $result = (Get-Staged "" $status.Conflicted Yellow)
+    $result = (Get-Staged $result $status.Staged Green)
+    $result = (Get-Staged $result $status.Unstaged Magenta)
+    $result = (Get-Staged $result $status.Untracked Gray)
+
+    return $result
+}
+
+function Get-CommitStatus($currentBranch) {
+
+    $remoteAheadCount = 0
+    $localAheadCount = 0
+
+    # get remote name of the current branch, i.e. origin
+	$remoteName = git config --get "branch.$currentBranch.remote"
+    
+    if ($remoteName -ne $null) {
+
+	    $remoteBranchName = git config --get "branch.$currentBranch.merge"
+	    $remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
+				
+	    # Get remote commit count ahead of current branch
+        $remoteAheadCount = git rev-list --left-only --count $remoteName'/'$remoteBranchName...HEAD
+        $localAheadCount = git rev-list --right-only --count $remoteName'/'$remoteBranchName...HEAD
+
+        $result = ""
+        if ($remoteAheadCount -gt 0 -and $localAheadCount -gt 0) {
+            $result = " #white#$remoteAheadCount#yellow#$upDownArrow#white#$localAheadCount"
+        } else {
+            $remoteCounts = @{
+                RemoteAhead = $remoteAheadCount;
+            }
+            
+            $result = Get-Staged " " $remoteCounts Green
+
+            $remoteCounts = @{
+                LocalAhead = $localAheadCount;
+            }
+    
+            $result = (Get-Staged $result $remoteCounts Magenta).TrimEnd()
+        }
+    }
+    
+    return "#darkgray#git:($currentBranch$result#darkgray#)"
 }
 
 # Does not raise an error when outside of a git repo
@@ -102,41 +190,53 @@ function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).
 	return $directoryInfo.FullName;
 }
 
-function Show-PsRadar($gitRepoPath, $currentPath) {
+function TimeToUpdate($lastUpdatePath) {
 
-    if($gitRepoPath -ne $null) {
+    if ((Test-Path $lastUpdatePath)){
+        return (Get-Date).Subtract((Get-Item $lastUpdatePath).LastWriteTime).TotalMinutes -gt 5
+    }
+    else {
+        return $true
+    }
 
-        $gitResults = @{
-		    GitRoot = $gitRepoPath;
-			PorcelainStatus = git status --porcelain;
+    return $false
+}
+
+function Begin-SilentFetch($gitRepoPath) {
+
+    Remove-Job -Name 'gitfetch' -Force -ErrorAction SilentlyContinue
+
+    $lastUpdatePath = $gitRepoPath + '\.git\lastupdatetime'
+
+    if (TimeToUpdate $lastUpdatePath) {
+
+        Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
+            echo $null > $lastUpdatePath
+            git -C $gitRepoPath fetch --quiet
         }
+    }
+}
 
-  	    $currentBranchString = (git branch --contains HEAD)
+function Show-PsRadar($gitRoot, $currentPath) {
 
-        if ($currentBranchString -ne $NULL) {
+    if($gitRoot -ne $null) {
+               
+        #Get current branch name
+		$currentBranch = git symbolic-ref --short HEAD
 
-            $currentBranch = $currentBranchString.Split([Environment]::NewLine)[0]
+        if ($currentBranch -ne $NULL) {
+            
+            $commitStatus = Get-CommitStatus $currentBranch
+			$fileStatus = Get-FilesStatus
 
-            if ($currentBranch[2] -eq '(') {
-                $branch = $currentBranch.Substring(2)
-            } else {
-                $branch = '(' + $currentBranch.Substring(2) + ')'
-            }
-
-            $gitRoot = $gitResults.GitRoot
             $repoName = ($gitRoot.Substring($gitRoot.LastIndexOf('\') + 1) + $currentPath.FullName.Substring($gitRoot.Length)).Replace('\', '/')
-            $porcelainStatus = $gitResults.PorcelainStatus
 
-    	    Write-Host $rightArrow -NoNewline -ForegroundColor Green
-    	    Write-Host " $repoName/" -NoNewline -ForegroundColor DarkCyan
-    	    Write-Host " git:$branch" -NoNewline -ForegroundColor DarkGray
+    	    Write-Host "$rightArrow " -NoNewline -ForegroundColor Green
+    	    Write-Host "$repoName/ " -NoNewline -ForegroundColor DarkCyan
+            Write-Chost $commitStatus
+            Write-Chost $fileStatus
 
-    	    $status = Get-StatusString $porcelainStatus
-
-    	    Get-Staged $status.Conflicted Yellow
-    	    Get-Staged $status.Staged Green
-    	    Get-Staged $status.Unstaged Magenta
-    	    Get-Staged $status.Untracked Gray
+            Begin-SilentFetch $gitRepoPath
 
             return $true
         }
