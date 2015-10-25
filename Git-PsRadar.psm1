@@ -217,15 +217,16 @@ function Show-PsRadar($gitRoot, $currentPath) {
 		$currentBranch = git symbolic-ref --short HEAD
 
         if ($currentBranch -ne $NULL) {
-			
+            
+            $commitStatus = Get-CommitStatus $currentBranch
+			$fileStatus = Get-FilesStatus
+
             $repoName = ($gitRoot.Substring($gitRoot.LastIndexOf('\') + 1) + $currentPath.FullName.Substring($gitRoot.Length)).Replace('\', '/')
 
     	    Write-Host "$rightArrow " -NoNewline -ForegroundColor Green
     	    Write-Host "$repoName/ " -NoNewline -ForegroundColor DarkCyan
-    	    
-            Write-Chost (Get-CommitStatus $currentBranch)
-    	    
-            Write-Chost (Get-FilesStatus)
+            Write-Chost $commitStatus
+            Write-Chost $fileStatus
 
             #Begin-SilentFetch $gitRepoPath
 
