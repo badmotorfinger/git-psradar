@@ -112,7 +112,7 @@ function Get-Staged($seed, $status, $color, $showNewFiles, $onlyShowNewFiles) {
     $result = (Get-StatusCountFragment $result $status.RemoteAhead  $downArrow $color)
     $result = (Get-StatusCountFragment $result $status.LocalAhead   $upArrow $color)
 
-	if (-not [string]::IsNullOrWhiteSpace($result)) {
+	if (-not [string]::IsNullOrWhiteSpace($result) -and $seed.Length -ne $result.Length) {
 		$result += ' '
 	}
     return $result
