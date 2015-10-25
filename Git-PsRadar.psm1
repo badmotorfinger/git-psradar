@@ -227,7 +227,7 @@ function Show-PsRadar($gitRoot, $currentPath) {
         if ($currentBranch -ne $NULL) {
             
             $commitStatus = Get-CommitStatus $currentBranch
-			$fileStatus = Get-FilesStatus
+			$fileStatus = (Get-FilesStatus).TrimEnd()
 
             $repoName = ($gitRoot.Substring($gitRoot.LastIndexOf('\') + 1) + $currentPath.FullName.Substring($gitRoot.Length)).Replace('\', '/')
 
@@ -259,7 +259,7 @@ function global:prompt {
 
 	# Change the prompt as soon as we enter a git repository
 	if ((Test-GitRepo) -and (Show-PsRadar $gitRepoPath $currentPath)) {
-		return "$ "
+		return "> "
 	} else {
 		Invoke-Command $Script:originalPrompt
 	}
