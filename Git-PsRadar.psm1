@@ -126,10 +126,8 @@ function Begin-SilentFetch($gitRepoPath) {
 
             Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
 
-                Write-Host "fetching $gitRepoPath"
-                git -C $gitRepoPath --quiet
-                Write-Host "done"
                 echo $null >> $lastUpdatePath
+                git -C $gitRepoPath --quiet
             }
         }
     }
@@ -143,7 +141,9 @@ function Show-PsRadar($gitRepoPath, $currentPath) {
 		    GitRoot = $gitRepoPath;
 			PorcelainStatus = git status --porcelain;
         }
-
+        
+        #Get current branch name
+        #git symbolic-ref --short HEAD
   	    $currentBranchString = (git branch --contains HEAD)
 
         if ($currentBranchString -ne $NULL) {
@@ -170,6 +170,9 @@ function Show-PsRadar($gitRepoPath, $currentPath) {
     	    Get-Staged $status.Staged Green
     	    Get-Staged $status.Unstaged Magenta
     	    Get-Staged $status.Untracked Gray
+
+            # Get remote commit count ahead of current branch
+            #git rev-list --left-only --count origin/silent-fetch-wip...HEAD
 
             Begin-SilentFetch $gitRepoPath
 
