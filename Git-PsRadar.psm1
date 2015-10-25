@@ -142,14 +142,18 @@ function Get-CommitStatus($currentBranch) {
 
     $remoteAheadCount = 0
     $localAheadCount = 0
+    $remoteBranchName = "master" #default
 
     # get remote name of the current branch, i.e. origin
-	$remoteName = git config --get "branch.$currentBranch.remote"
+	#$remoteName = git config --get "branch.$currentBranch.remote"
+    $remoteName = git remote show
     
     if ($remoteName -ne $null) {
-
-	    $remoteBranchName = git config --get "branch.$currentBranch.merge"
-	    $remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
+        
+        if ($currentBranch -ne "master") {
+            $remoteBranchName = git config --get "branch.$currentBranch.merge"
+	        $remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
+        }
 				
 	    # Get remote commit count ahead of current branch
         $remoteAheadCount = git rev-list --left-only --count $remoteName'/'$remoteBranchName...HEAD
