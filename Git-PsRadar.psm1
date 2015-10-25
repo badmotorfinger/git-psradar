@@ -173,7 +173,7 @@ function Get-CommitStatus($currentBranch) {
         }
     }
     
-    return "#darkgray#git:($currentBranch$result#darkgray#)"
+    return "#darkgray#git:($currentBranch$result#darkgray#) "
 }
 
 # Does not raise an error when outside of a git repo
