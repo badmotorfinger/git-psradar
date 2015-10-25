@@ -18,7 +18,6 @@ $upArrow 	= ([Convert]::ToChar(24))
 $downArrow 	= ([Convert]::ToChar(25))
 $rightArrow	= ([Convert]::ToChar(26))
 
-# For this function, credit goes to http://marco-difeo.de/2012/06/19/powershell-colorize-string-output-with-colorvariables-in-the-output-string/
 function Write-Chost($message = ""){
     
 	if ( $message ){
@@ -141,31 +140,37 @@ function Get-FilesStatus() {
 
 function Get-CommitStatus($currentBranch) {
 
+    $remoteAheadCount = 0
+    $localAheadCount = 0
+
     # get remote name of the current branch, i.e. origin
 	$remoteName = git config --get "branch.$currentBranch.remote"
-				
-	$remoteBranchName = git config --get "branch.$currentBranch.merge"
-	$remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
-				
-	# Get remote commit count ahead of current branch
-    $remoteAheadCount = git rev-list --left-only --count $remoteName'/'$remoteBranchName...HEAD
-    $localAheadCount = git rev-list --right-only --count $remoteName'/'$remoteBranchName...HEAD
-
-    $result = ""
-    if ($remoteAheadCount -gt 0 -and $localAheadCount -gt 0) {
-        $result = " #white#$remoteAheadCount#yellow#$upDownArrow#white#$localAheadCount"
-    } else {
-        $remoteCounts = @{
-            RemoteAhead = $remoteAheadCount;
-        }
-            
-        $result = Get-Staged " " $remoteCounts Green
-
-        $remoteCounts = @{
-            LocalAhead = $localAheadCount;
-        }
     
-        $result = (Get-Staged $result $remoteCounts Magenta).TrimEnd()
+    if ($remoteName -ne $null) {
+
+	    $remoteBranchName = git config --get "branch.$currentBranch.merge"
+	    $remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
+				
+	    # Get remote commit count ahead of current branch
+        $remoteAheadCount = git rev-list --left-only --count $remoteName'/'$remoteBranchName...HEAD
+        $localAheadCount = git rev-list --right-only --count $remoteName'/'$remoteBranchName...HEAD
+
+        $result = ""
+        if ($remoteAheadCount -gt 0 -and $localAheadCount -gt 0) {
+            $result = " #white#$remoteAheadCount#yellow#$upDownArrow#white#$localAheadCount"
+        } else {
+            $remoteCounts = @{
+                RemoteAhead = $remoteAheadCount;
+            }
+            
+            $result = Get-Staged " " $remoteCounts Green
+
+            $remoteCounts = @{
+                LocalAhead = $localAheadCount;
+            }
+    
+            $result = (Get-Staged $result $remoteCounts Magenta).TrimEnd()
+        }
     }
     
     return "#darkgray#git:($currentBranch$result#darkgray#)"
@@ -199,18 +204,15 @@ function TimeToUpdate($lastUpdatePath) {
 
 function Begin-SilentFetch($gitRepoPath) {
 
-    if ($gitRepoPath -ne $null) {
+    Remove-Job -Name 'gitfetch' -Force -ErrorAction SilentlyContinue
 
-        Remove-Job -Name 'gitfetch' -Force -ErrorAction SilentlyContinue
+    $lastUpdatePath = $gitRepoPath + '\.git\lastupdatetime'
 
-        $lastUpdatePath = $gitRepoPath + '\.git\lastupdatetime'
+    if (TimeToUpdate $lastUpdatePath) {
 
-        if (TimeToUpdate $lastUpdatePath) {
-
-            Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
-                echo $null > $lastUpdatePath
-                git -C $gitRepoPath fetch --quiet
-            }
+        Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
+            echo $null > $lastUpdatePath
+            git -C $gitRepoPath fetch --quiet
         }
     }
 }
@@ -262,3 +264,4 @@ function global:prompt {
 		Invoke-Command $Script:originalPrompt
 	}
 }
+
