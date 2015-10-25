@@ -207,10 +207,10 @@ function Begin-SilentFetch($gitRepoPath) {
 
         if (TimeToUpdate $lastUpdatePath) {
 
-            #Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
-                echo $null >> $lastUpdatePath
+            Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
+                echo $null > $lastUpdatePath
                 git -C $gitRepoPath fetch --quiet
-            #}
+            }
         }
     }
 }
@@ -234,7 +234,7 @@ function Show-PsRadar($gitRoot, $currentPath) {
             Write-Chost $commitStatus
             Write-Chost $fileStatus
 
-            #Begin-SilentFetch $gitRepoPath
+            Begin-SilentFetch $gitRepoPath
 
             return $true
         }
