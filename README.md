@@ -24,6 +24,10 @@ Prompt              | Meaning
 ![RemoteBranchAhead] | We have 1 commit to pull down, 1 new and 1 modified files staged for commit
 ![BranchDiverged] | Our version and origins version of master have diverged
 
+### Bacground fetch
+
+When entering a git repository at the command line, Git-PsRadar will place a 0 length file in your `.git` directory called `lastupdatetime`. If the modified date shows it's older than 5 minutes, a background `git fetch` (which won't affect your current working copy) will be performed which will then show pending changes in the PowerShell HUD prompt. It's a feature I intend to make configurable in the near future.
+
 ## Installation
 
 Download the Git-PsRadar.psm1 file, put it in a folder called Git-PsRadar and copy the folder it to your PowerShell module directory.The default location for this is .\WindowsPowerShell\Modules (relative to your Documents folder). You can also extract it to another directory listed in your $env:PSModulePath. The full installation path should be **\Documents\WindowsPowerShell\Modules\Git-PsRadar\Git-PsRadar.psm1**
