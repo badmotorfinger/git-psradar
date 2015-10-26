@@ -142,20 +142,27 @@ function Get-CommitStatus($currentBranch) {
 
     $remoteAheadCount = 0
     $localAheadCount = 0
-    $remoteBranchName = "master" #default
+    $remoteBranchName = $null
 
     # get remote name of the current branch, i.e. origin
-	#$remoteName = git config --get "branch.$currentBranch.remote"
-    $remoteName = git remote show
-    
-    if ($remoteName -ne $null) {
+	$remoteName = git config --get "branch.$currentBranch.remote"
         
-        if ($currentBranch -ne "master") {
-            $remoteBranchName = git config --get "branch.$currentBranch.merge"
-	        $remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
-        }
-				
-	    # Get remote commit count ahead of current branch
+    if ($remoteName -eq $null) {
+        $remoteName = 'origin' # Still haven't found a way to get the remote name when on the master branch
+    }
+    
+    $remoteBranchName = git config --get "branch.$currentBranch.merge"
+
+    if ($remoteBranchName -eq $null -and $currentBranch -eq 'master') {
+        $remoteBranchName = 'master' # Need to find out how to determine the remote branch name when on the master branch
+    }
+
+    if ($remoteBranchName -ne $null) {
+
+        # We only need the remote branch name
+        $remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
+
+        # Get remote commit count ahead of current branch
         $remoteAheadCount = git rev-list --left-only --count $remoteName'/'$remoteBranchName...HEAD
         $localAheadCount = git rev-list --right-only --count $remoteName'/'$remoteBranchName...HEAD
 
@@ -176,7 +183,7 @@ function Get-CommitStatus($currentBranch) {
             $result = (Get-Staged $result $remoteCounts Magenta).TrimEnd()
         }
     }
-    
+
     return "#darkgray#git:($currentBranch$result#darkgray#) "
 }
 
