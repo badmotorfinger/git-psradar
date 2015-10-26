@@ -8,7 +8,7 @@ The most useful prompt I have seen for working with git repositories, I just had
 
 ### Standard prompt
 
-The Git Radar prompt will automatically toggle after you import the `Git-PsRadar` module in to your session and `cd` in to a git repository.
+The Git Radar prompt will automatically toggle after you import the `Git-PsRadar` module in to your session and `cd` in to a git repository. The example below shows the mater branch with 1 modified file staged for commit, 1 deleted, 1 modified and 2 new files not yet staged for commit.
 
 ![PowerShellPrompt]
 
@@ -16,12 +16,13 @@ The Git Radar prompt will automatically toggle after you import the `Git-PsRadar
 
 The prompt will show you the difference in commits between your branch and the
 remote your branch is tracking. The examples below assume you are checked out on
-`sfetch` and are tracking `origin/silent-fetch`.
+`master` and are tracking `origin/master`.
 
 Prompt              | Meaning
 --------------------|--------
-![LocalBranchAhead]  | We have 3 commits to push up
-![RemoteBranchAhead] | We have 1 commit to pull down
+![LocalBranchAhead]  | We have 4 commits to push up, 1 modified and 3 new files not yet staged to commit
+![RemoteBranchAhead] | We have 1 commit to pull down, 1 new and 1 modified files staged for commit
+![BranchDiverged] | Our version and origins version of master have diverged
 
 ## Installation
 
@@ -35,8 +36,9 @@ If the file Microsoft.PowerShell_profile.ps1 does not exist, you can simply crea
 
 ## What's next
 
-I'll be working on this script as time permits, but I am keen to bring across all features, especially background fetch.
+I'll be working on this script as time permits, but I am keen to bring across all features.
 
 [PowerShellPrompt]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/basic-usage.png
 [LocalBranchAhead]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/local-branch-ahead.PNG
 [RemoteBranchAhead]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/remote-branch-ahead.PNG
+[BranchDiverged]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/remote-local-diverged.PNG
