@@ -168,7 +168,7 @@ function Get-CommitStatus($currentBranch) {
 
         $result = ""
         if ($remoteAheadCount -gt 0 -and $localAheadCount -gt 0) {
-            $result = " #white#$remoteAheadCount#yellow#$upDownArrow#white#$localAheadCount"
+            $result = " #white#$remoteAheadCount#yellow#$upArrow$downArrow#white#$localAheadCount"
         } else {
             $remoteCounts = @{
                 RemoteAhead = $remoteAheadCount;
