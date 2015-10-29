@@ -39,7 +39,7 @@ function Write-Chost($message = ""){
 				    $CurrentColor = $string          
 			    }else{
 				    # If string is a output message, than write string with current color (with no line break)
-                    if ($CurrentColor -ne -1) {
+                    if ($CurrentColor -ne $null -and $CurrentColor -ne -1) {
 				        write-host -nonewline -f $CurrentColor $string
                     } else {
                         write-host -nonewline $string
@@ -135,7 +135,7 @@ function Get-FilesStatus() {
     $result = (Get-Staged $result $status.Unstaged Magenta)
     $result = (Get-Staged $result $status.Untracked Gray)
 
-    return $result
+    return ' ' + $result
 }
 
 function Get-CommitStatus($currentBranch) {
@@ -184,7 +184,7 @@ function Get-CommitStatus($currentBranch) {
         }
     }
 
-    return "#darkgray#git:($currentBranch$result#darkgray#) "
+    return "#darkgray#git:($currentBranch$result#darkgray#)"
 }
 
 # Does not raise an error when outside of a git repo
