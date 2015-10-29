@@ -215,14 +215,13 @@ function TimeToUpdate($lastUpdatePath) {
 
 function Begin-SilentFetch($gitRepoPath) {
 
-    Remove-Job -Name 'gitfetch' -Force -ErrorAction SilentlyContinue
-
     $lastUpdatePath = $gitRepoPath + '\.git\lastupdatetime'
 
     if (TimeToUpdate $lastUpdatePath) {
+        echo $null > $lastUpdatePath
+        Remove-Job -Name 'gitfetch' -Force -ErrorAction SilentlyContinue
 
         Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
-            echo $null > $lastUpdatePath
             git -C $gitRepoPath fetch --quiet
         }
     }
