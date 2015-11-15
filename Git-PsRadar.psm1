@@ -193,9 +193,8 @@ function Test-GitRepo($location) {
     $directoryInfo = $location;
 
     if ($location -is [System.Management.Automation.PathInfo]) {
-        if ($location.Provider.Name -eq 'FileSystem') {
+        if ($location.Provider.Name -eq 'FileSystem' -and (-not $location.ProviderPath.StartsWith('\\'))) {
             $directoryInfo = ([System.IO.DirectoryInfo]$location.Path)
-        
         }
     }
 
