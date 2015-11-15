@@ -188,17 +188,29 @@ function Get-CommitStatus($currentBranch) {
 }
 
 # Does not raise an error when outside of a git repo
-function Test-GitRepo($directoryInfo = ([System.IO.DirectoryInfo](Get-Location).Path)) {
+function Test-GitRepo($location) {
+    
+    $directoryInfo = $location;
+
+    if ($location -is [System.Management.Automation.PathInfo]) {
+        if ($location.Provider.Name -eq 'FileSystem') {
+            $directoryInfo = ([System.IO.DirectoryInfo]$location.Path)
+        
+        }
+    }
 
 	if ($directoryInfo -eq $null) { return }
+    
+    if ($directoryInfo -is [System.IO.DirectoryInfo]) {
 
-	$gs = $directoryInfo.GetDirectories(".git");
+	    $gs = $directoryInfo.GetDirectories(".git");
 
-	if ($gs.Length -eq 0)
-	{
-		return Test-GitRepo($directoryInfo.Parent);
-	}
-	return $directoryInfo.FullName;
+	    if ($gs.Length -eq 0)
+	    {
+		    return Test-GitRepo($directoryInfo.Parent);
+	    }
+	    return $directoryInfo.FullName;
+    }
 }
 
 function TimeToUpdate($lastUpdatePath) {
@@ -239,7 +251,7 @@ function Show-PsRadar($gitRoot, $currentPath) {
             $commitStatus = Get-CommitStatus $currentBranch
 			$fileStatus = (Get-FilesStatus).TrimEnd()
 
-            $repoName = ($gitRoot.Substring($gitRoot.LastIndexOf('\') + 1) + $currentPath.FullName.Substring($gitRoot.Length)).Replace('\', '/')
+            $repoName = ($gitRoot.Substring($gitRoot.LastIndexOf('\') + 1) + $currentPath.Substring($gitRoot.Length)).Replace('\', '/')
 
     	    Write-Host "$rightArrow " -NoNewline -ForegroundColor Green
     	    Write-Host "$repoName/ " -NoNewline -ForegroundColor DarkCyan
@@ -263,15 +275,15 @@ if ($Script:originalPrompt -eq $null) {
 }
 
 function global:prompt {
-
-    $currentPath = ([System.IO.DirectoryInfo](Get-Location).Path)
-	$gitRepoPath = Test-GitRepo $currentPath
+    
+    $currentLocation = Get-Location
+    $currentPath = $currentLocation.ProviderPath
+	$gitRepoPath = Test-GitRepo $currentLocation
 
 	# Change the prompt as soon as we enter a git repository
-	if ((Test-GitRepo) -and (Show-PsRadar $gitRepoPath $currentPath)) {
+	if ($gitRepoPath -ne $null -and (Show-PsRadar $gitRepoPath $currentPath)) {
 		return "> "
 	} else {
 		Invoke-Command $Script:originalPrompt
 	}
 }
-
