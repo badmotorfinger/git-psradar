@@ -24,7 +24,7 @@ Prompt              | Meaning
 ![RemoteBranchAhead] | We have 1 commit to pull down, 1 new and 1 modified files staged for commit
 ![BranchDiverged] | Our version and origins version of master have diverged
 
-### Bacground fetch
+### Background fetch
 
 When entering a git repository at the command line, Git-PsRadar will place a 0 length file in your `.git` directory called `lastupdatetime`. If the modified date shows it's older than 5 minutes, a background `git fetch` (which won't affect your current working copy) will be performed which will then show pending changes in the PowerShell HUD prompt. It's a feature I intend to make configurable in the near future.
 
