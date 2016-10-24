@@ -23,6 +23,7 @@ Prompt              | Meaning
 ![LocalBranchAhead]  | We have 4 commits to push up, 1 modified and 3 new files not yet staged to commit
 ![RemoteBranchAhead] | We have 1 commit to pull down, 1 new and 1 modified files staged for commit
 ![BranchDiverged] | Our version and origins version of master have diverged
+![BothRemotesDivergedAndLocalDiverged] | origin/master and origin/tmp have diverged. Our local tmp branch also has 4 changes to pull and 1 to push up to origin/tmp
 
 ### Background fetch
 
@@ -57,5 +58,6 @@ I'll be working on this script as time permits, but I am keen to bring across al
 [LocalBranchAhead]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/local-branch-ahead.PNG
 [RemoteBranchAhead]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/remote-branch-ahead.PNG
 [BranchDiverged]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/remote-local-diverged.PNG
+[BothRemotesDivergedAndLocalDiverged]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/gitps-remote-branch-remote-origin-diverged-changes-to-pull-down.PNG
 
 
