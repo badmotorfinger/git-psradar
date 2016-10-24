@@ -38,7 +38,7 @@ See the module listing in the [official PowerShell gallary](https://www.powershe
 
 Once complete, run the command `Import-Module Git-PsRadar`. For ease of use I recomend placing this command in your PowerShell startup profile.
 
-#### The hard way 
+#### The hard way  
 
 Download the Git-PsRadar.psm1 file, put it in a folder called Git-PsRadar and copy the folder it to your PowerShell module directory.The default location for this is .\WindowsPowerShell\Modules (relative to your Documents folder). You can also extract it to another directory listed in your $env:PSModulePath. The full installation path should be **\Documents\WindowsPowerShell\Modules\Git-PsRadar\Git-PsRadar.psm1**
 
