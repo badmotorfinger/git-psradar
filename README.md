@@ -23,7 +23,7 @@ Prompt              | Meaning
 ![LocalBranchAhead]  | We have 4 commits to push up, 1 modified and 3 new files not yet staged to commit
 ![RemoteBranchAhead] | We have 1 commit to pull down, 1 new and 1 modified files staged for commit
 ![BranchDiverged] | Our version and origins version of master have diverged
-![BothRemotesDivergedAndLocalDiverged] | origin/master and origin/tmp have diverged. Our local tmp branch also has 4 changes to pull and 1 to push up to origin/tmp
+![BothRemotesDivergedAndLocalDiverged] | origin/master and origin/tmp have diverged. Our local tmp branch also has 15 changes to pull and 1 to push up to origin/tmp
 
 ### Background fetch
 
