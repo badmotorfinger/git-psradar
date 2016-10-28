@@ -318,9 +318,10 @@ $leftArrowSet2          = '◄' # 17
 $leftRightArrowSet2     = '◄►'# 29
 
 $quest = @"
-"You are using git-psradar for the first time. Please select the character set which looks best to you:
+
+You are using git-psradar for the first time. Please select the character set which looks best to you:
 1. $upArrowSet1 $downArrowSet1 $rightArrowSet1 $leftArrowSet1 $leftRightArrowSet1
-2. $upArrowSet2 $downArrowSet2 $rightArrowSet2 $leftArrowSet2 $leftRightArrowSet2" 
+2. $upArrowSet2 $downArrowSet2 $rightArrowSet2 $leftArrowSet2 $leftRightArrowSet2
 "@
 
     $set = Read-Host -Prompt $quest
