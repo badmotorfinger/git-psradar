@@ -343,7 +343,9 @@ You are using git-psradar for the first time. Please select the character set wh
         Set-Content -Path "$Env:USERPROFILE\.git-psradar" -Value "$upArrowSet1`n$downArrowSet1`n$rightArrowSet1`n$leftArrowSet1`n$leftRightArrowSet1" -Encoding Unicode
     }
     
-
+    if ((Get-Command "git.exe" -ErrorAction SilentlyContinue) -eq $null) { 
+        Write-Host "Git-PsRadar will not work unless git.exe is in your path" -ForegroundColor Red
+    }
 }
 
 Set-ArrowCharacters
