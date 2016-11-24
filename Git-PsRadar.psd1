@@ -12,7 +12,7 @@
 RootModule = 'Git-PsRadar.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.1.0'
+ModuleVersion = '1.1.1'
 
 # ID used to uniquely identify this module
 GUID = '23f8b0ef-e319-4c31-b797-e1204d0e7eb7'
@@ -29,16 +29,7 @@ PowerShellVersion = '3.0'
 FileList = 'Git-PsRadar.psm1'
 
 # Functions to export from this module
-FunctionsToExport = '*'
-
-# Cmdlets to export from this module
-CmdletsToExport = '*'
-
-# Variables to export from this module
-VariablesToExport = '*'
-
-# Aliases to export from this module
-AliasesToExport = '*'
+FunctionsToExport = 'Show-GitPsRadar', 'Test-GitRepo'
 
 HelpInfoURI = 'https://github.com/vincpa/git-psradar'
 
@@ -60,7 +51,7 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'Fixed a bug which causes the prompt to not display the current path when in any other provider other than the FileSystem provider.'
+        ReleaseNotes = 'Give user ability to choose a character set during installation. Check for git.exe in PATH.'
 
     } # End of PSData hashtable
 
