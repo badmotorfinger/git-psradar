@@ -10,6 +10,8 @@ The most useful prompt I have seen for working with git repositories, I just had
 
 The Git Radar prompt will automatically toggle after you import the `Git-PsRadar` module in to your session and `cd` in to a git repository. The example below shows the mater branch with 1 modified file staged for commit, 1 deleted, 1 modified and 2 new files not yet staged for commit.
 
+> Tip! Git-PsRadar works best with font Lucida Console at size 16.
+
 ![PowerShellPrompt]
 
 ### Local commits status
