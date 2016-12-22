@@ -14,7 +14,7 @@
 
 #>
 
-$arrows = @{upArrow = '↑';downArrow = '↓';rightArrow = '→';leftArrow = '←'; leftRightArrow = '↔'}
+$arrows = @{upArrow = '↑';downArrow = '↓';rightArrow = '→';leftArrow = '←'; leftRightArrow = '↔'; stash = '≡'}
 $arrows = New-Object –TypeName PSObject –Prop $arrows
 
 function Write-Chost($message = ""){
@@ -123,6 +123,12 @@ function Get-StatusCountFragment($seed, $count, $symbol, $color) {
     return $seed;
 }
 
+function Get-StashStatus($result) {
+   $count = 0;
+    $stashCount = git stash list | % { $count = $count + 1; }
+    return (Get-StatusCountFragment $result $count $arrows.stash Yellow)
+}
+
 function Get-FilesStatus() {
     
     $porcelainStatus = git status --porcelain;
@@ -133,7 +139,8 @@ function Get-FilesStatus() {
     $result = (Get-Staged $result $status.Staged Green)
     $result = (Get-Staged $result $status.Unstaged Magenta)
     $result = (Get-Staged $result $status.Untracked Gray)
-
+    $result = (Get-StashStatus $result)
+    
     return ' ' + $result
 }
 
