@@ -12,6 +12,8 @@ The Git Radar prompt will automatically toggle after you import the `Git-PsRadar
 
 ![PowerShellPrompt]
 
+> Tip! Git-PsRadar works best with font Lucida Console at size 16.
+
 ### Local commits status
 
 The prompt will show you the difference in commits between your branch and the
