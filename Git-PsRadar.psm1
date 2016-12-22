@@ -342,12 +342,10 @@ You are using git-psradar for the first time. Please select the character set wh
 
     if ([int]::TryParse($set, [ref]$set)-and $set -eq 1) {
         Set-Content -Path "$Env:USERPROFILE\.git-psradar" -Value "$upArrowSet1`n$downArrowSet1`n$rightArrowSet1`n$leftArrowSet1`n$leftRightArrowSet1" -Encoding Unicode
-    } elseif ([int]::TryParse($set, [ref]$set)-and $set -eq 2) {
-        Set-Content -Path "$Env:USERPROFILE\.git-psradar" -Value "$upArrowSet2`n$downArrowSet2`n$rightArrowSet2`n$leftArrowSet2`n$leftRightArrowSet2" -Encoding Unicode
     } elseif ([int]::TryParse($set, [ref]$set)-and $set -eq 3) {
         Set-Content -Path "$Env:USERPROFILE\.git-psradar" -Value "$upArrowSet3`n$downArrowSet3`n$rightArrowSet3`n$leftArrowSet3`n$leftRightArrowSet3" -Encoding Unicode
     } else {
-        Set-Content -Path "$Env:USERPROFILE\.git-psradar" -Value "$upArrowSet1`n$downArrowSet1`n$rightArrowSet1`n$leftArrowSet1`n$leftRightArrowSet1" -Encoding Unicode
+        Set-Content -Path "$Env:USERPROFILE\.git-psradar" -Value "$upArrowSet2`n$downArrowSet2`n$rightArrowSet2`n$leftArrowSet2`n$leftRightArrowSet2" -Encoding Unicode
     }
     
     if ((Get-Command "git.exe" -ErrorAction SilentlyContinue) -eq $null) { 
