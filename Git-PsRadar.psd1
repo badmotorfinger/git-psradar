@@ -12,7 +12,7 @@
 RootModule = 'Git-PsRadar.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.1.1'
+ModuleVersion = '1.1.2'
 
 # ID used to uniquely identify this module
 GUID = '23f8b0ef-e319-4c31-b797-e1204d0e7eb7'
@@ -29,7 +29,7 @@ PowerShellVersion = '3.0'
 FileList = 'Git-PsRadar.psm1'
 
 # Functions to export from this module
-FunctionsToExport = 'Show-GitPsRadar', 'Test-GitRepo'
+FunctionsToExport = 'Show-GitPsRadar'
 
 HelpInfoURI = 'https://github.com/vincpa/git-psradar'
 
@@ -51,7 +51,7 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'Give user ability to choose a character set during installation. Check for git.exe in PATH.'
+        ReleaseNotes = 'Show the number of stashes in the prompt'
 
     } # End of PSData hashtable
 
