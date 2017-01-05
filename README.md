@@ -20,12 +20,23 @@ The prompt will show you the difference in commits between your branch and the
 remote your branch is tracking. The examples below assume you are checked out on
 `master` and are tracking `origin/master`.
 
-Prompt              | Meaning
---------------------|--------
-![LocalBranchAhead]  | We have 4 commits to push up, 1 modified and 3 new files not yet staged to commit
-![RemoteBranchAhead] | We have 1 commit to pull down, 1 new and 1 modified files staged for commit
-![BranchDiverged] | master and origin/master have diverged. We have 1 change to pull down and 3 to push.
-![BothRemotesDivergedAndLocalDiverged] | origin/master and origin/tmp have diverged. Our local tmp branch also has 15 changes to pull and 1 to push up to origin/tmp. Essentally the arrows in the middle show branch diversion on the server and the arrows to the right show diversions between the local branch and the remote branch it's tracking.
+### Prompt & Meaning
+
+![LocalBranchAhead]
+
+There are 4 commits to push up, 1 modified and 3 new files not yet staged to commit
+
+![RemoteBranchAhead] 
+
+There is 1 commit to pull down, 1 new and 1 modified files staged for commit
+
+![BranchDiverged]
+
+master and origin/master have diverged. We have 1 change to pull down and 3 to push.
+
+![BothRemotesDivergedAndLocalDiverged]
+
+origin/master and origin/tmp have diverged. Our local tmp branch also has 15 changes to pull and 1 to push up to origin/tmp. Essentally the arrows in the middle show branch diversion on the server and the arrows to the right show diversions between the local branch and the remote branch it's tracking.
 
 ### Background fetch
 
