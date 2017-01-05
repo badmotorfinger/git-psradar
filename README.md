@@ -4,7 +4,7 @@ A (work-in-progress) PowerShell port of [git-radar](https://github.com/michaeldf
 
 ## Why
 
-The most useful prompt I have seen for working with git repositories, I just had to have it! Please help me if you like it :)
+The most useful prompt I have seen for working with git repositories, I just had to have it!
 
 ### Standard prompt
 
