@@ -38,6 +38,22 @@ master and origin/master have diverged. We have 1 change to pull down and 3 to p
 
 origin/master and origin/tmp have diverged. Our local tmp branch also has 15 changes to pull and 1 to push up to origin/tmp. Essentally the arrows in the middle show branch diversion on the server and the arrows to the right show diversions between the local branch and the remote branch it's tracking.
 
+![ShowStashCount]
+
+There is 1 item in our stash stack
+
+![OriginMasterDiveredTmp]
+
+origin/master has divered by 1 commit from our local tmp branch
+
+![TmpAheadOriginMaster]
+
+tmp branch is locally ahead by 1 commit from origin/master (blue arrow)
+
+![OriginTmpAheadOriginMaster]
+
+origin/tmp ahead by 1 commit from origin/master (green arrow). The arrow changes colour after pushing the branch to the remote.
+
 ### Background fetch
 
 When entering a git repository at the command line, Git-PsRadar will place a 0 length file in your `.git` directory called `lastupdatetime`. If the modified date shows it's older than 5 minutes, a background `git fetch` (which won't affect your current working copy) will be performed which will then show pending changes in the PowerShell HUD prompt. It's a feature I intend to make configurable in the near future.
@@ -74,6 +90,7 @@ I'll be working on this script as time permits, but I am keen to bring across al
 [RemoteBranchAhead]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/remote-branch-ahead.PNG
 [BranchDiverged]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/remote-local-diverged.PNG
 [BothRemotesDivergedAndLocalDiverged]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/gitps-remote-branch-remote-origin-diverged-changes-to-pull-down.PNG
-
-
-
+[ShowStashCount]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/show-stash-count.png
+[OriginMasterDiveredTmp]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/origin-master-diverged-tmp.png
+[TmpAheadOriginMaster]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/tmp-ahead-origin-master.png
+[OriginTmpAheadOriginMaster]: https://raw.githubusercontent.com/vincpa/git-psradar/master/images/origin-tmp-diverged-origin-master.png
