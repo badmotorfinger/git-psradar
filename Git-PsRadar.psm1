@@ -49,23 +49,22 @@ function Write-Chost($message = ""){
     }
 }
 
-function Get-StatusString($porcelainString) {
+function Get-StatusString($repoStatus) {
+    
     $results = @{
         Staged = @{
             Modified = 0;
             Deleted = 0;
             Added = 0;
             Renamed = 0;
-            Copied = 0;
         };
         Unstaged = @{
             Modified = 0;
             Deleted = 0;
             Renamed = 0;
-            Copied = 0;
         };
         Untracked = @{
-            Added = 0;
+            Added = ($repoStatus.Untracked | ? { $_.State -eq [LibGit2Sharp.FileStatus]::NewInWorkdir }).Count;
         };
         Conflicted = @{
             ConflictUs = 0;
@@ -74,27 +73,20 @@ function Get-StatusString($porcelainString) {
         }
     }
 
-    if ($porcelainString -ne '' -and $porcelainStatus -ne $null) {
-
-        $porcelainString.Split([Environment]::NewLine) | % {
-            if ($_[0] -eq 'R') { $results.Staged.Renamed++; }
-            elseif ($_[0] -eq 'A') { $results.Staged.Added++ }
-            elseif ($_[0] -eq 'D') { $results.Staged.Deleted++ }
-            elseif ($_[0] -eq 'M') { $results.Staged.Modified++ }
-            elseif ($_[0] -eq 'C') { $results.Staged.Copied++ }
-
-            if ($_[1] -eq 'R') { $results.Unstaged.Renamed++ }
-            elseif ($_[1] -eq 'D') { $results.Unstaged.Deleted++ }
-            elseif ($_[1] -eq 'M') { $results.Unstaged.Modified++ }
-            elseif ($_[1] -eq 'C') { $results.Unstaged.Copied++ }
-            if($_[1] -eq '?') { $results.Untracked.Added++ }
-
-            elseif ($_[1] -eq 'U') { $results.Conflicted.ConflictUs++ }
-            elseif ($_[1] -eq 'T') { $results.Conflicted.ConflictThem++ }
-            elseif ($_[1] -eq 'B') { $results.Conflicted.Conflict++ }
-        }
-    }
+    SetStatusCounts-ForRepo $repoStatus.Staged $results.Staged
+    SetStatusCounts-ForRepo $repoStatus.Modified $results.Unstaged
+        
     return $results
+}
+
+function SetStatusCounts-ForRepo($fileStateLocation, $resultToPopulate) {
+# Use hashtable lookup for increments instead of a bunch of if statements
+    ForEach($stausEntry in $fileStateLocation) {
+        if ($stausEntry.State -eq ([LibGit2Sharp.FileStatus]::ModifiedInWorkdir -bor [LibGit2Sharp.FileStatus]::ModifiedInIndex)) { $resultToPopulate.Modified++ }
+        if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::DeletedFromWorkdir) { $resultToPopulate.Deleted++ }
+        if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::RenamedInWorkdir) { $resultToPopulate.Renamed++ }
+        if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::NewInWorkdir) { $resultToPopulate.Added++ }
+    }
 }
 
 function Get-Staged($seed, $status, $color, $showNewFiles, $onlyShowNewFiles) {
@@ -123,23 +115,23 @@ function Get-StatusCountFragment($seed, $count, $symbol, $color) {
     return $seed;
 }
 
-function Get-StashStatus($result) {
-   $count = 0;
-    $stashCount = git stash list | % { $count = $count + 1; }
+function Get-StashStatus($result, $repo) {
+    $count = ($repo.Stashes | measure).Count;
     return (Get-StatusCountFragment $result $count $arrows.stash Yellow)
 }
 
-function Get-FilesStatus() {
+function Get-FilesStatus($repo) {
     
-    $porcelainStatus = git status --porcelain;
+    $statusOptions = New-Object LibGit2Sharp.StatusOptions -Property  @{ IncludeIgnored = $false };
+    $repoStatus = $repo.RetrieveStatus($statusOptions)
 
-    $status = Get-StatusString $porcelainStatus
+    $status = Get-StatusString $repoStatus
 
     $result = (Get-Staged "" $status.Conflicted Yellow)
     $result = (Get-Staged $result $status.Staged Green)
     $result = (Get-Staged $result $status.Unstaged Magenta)
     $result = (Get-Staged $result $status.Untracked Gray)
-    $result = (Get-StashStatus $result)
+    $result = (Get-StashStatus $result $repo)
     
     return ' ' + $result
 }
@@ -165,6 +157,8 @@ function Get-RemoteBranchName($currentBranch, $gitRoot, $remoteName) {
 }
 
 function Get-CommitStatus($currentBranch, $gitRoot) {
+    
+    $repo = New-Object LibGit2Sharp.Repository($gitRoot)
 
     $remoteAheadCount = 0
     $localAheadCount = 0
@@ -223,7 +217,8 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
         elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #cyan#$($arrows.rightArrow) "}
         elseif ($branchAheadCount -gt 0) { $masterBehindAhead = "m #white#$branchAheadCount #cyan#$($arrows.leftArrow) "}
     }
-    $fileStatus = (Get-FilesStatus).TrimEnd()
+    $fileStatus = (Get-FilesStatus $repo).TrimEnd()
+    $repo.Dispose();
     
     return "#darkgray#git:($masterBehindAhead#darkgray#$currentBranch$result#darkgray#)$fileStatus"
 }
@@ -365,11 +360,18 @@ if ($Script:originalPrompt -eq $null) {
 function global:prompt {
     
     if (Get-Command "git.exe" -ErrorAction SilentlyContinue) { 
-    
+        $ScriptRoot = (Split-Path $MyInvocation.MyCommand.Definition)
+        if ($ScriptRoot -eq '') { $ScriptRoot = $PSScriptRoot }
+        
         $currentLocation = Get-Location
         $currentPath = $currentLocation.ProviderPath
         $gitRepoPath = Test-GitRepo $currentLocation
+        
+        Get-ChildItem -Path (Join-Path -Path $ScriptRoot -ChildPath 'Functions' -Resolve) -Filter '*.ps1' |
+            ForEach-Object { . $_.FullName }
 
+        Load-LibGit2Sharp $ScriptRoot
+        
         # Change the prompt as soon as we enter a git repository
         if ($gitRepoPath -ne $null -and (Show-PsRadar $gitRepoPath $currentPath)) {
             return "> "
