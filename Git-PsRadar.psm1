@@ -136,9 +136,9 @@ function Get-FilesStatus($repo) {
     return ' ' + $result
 }
 
-function Get-RemoteBranchName($currentBranch, $gitRoot, $remoteName) {
+function Get-RemoteBranchName($currentBranch, $gitRoot, $remoteName, $repo) {
     
-    $remoteBranchName = git config --get "branch.$currentBranch.merge"
+    $remoteBranchName = Get-ConfigValue $repo "branch.$currentBranch.merge"
     
     if ($remoteBranchName -eq $null) {
     
@@ -156,6 +156,14 @@ function Get-RemoteBranchName($currentBranch, $gitRoot, $remoteName) {
     }
 }
 
+function Get-ConfigValue($repo, $configKey) {
+
+    $result = $repo.Config | ? { $_.Key -eq $configKey }
+    if ($result -ne $null) {
+        return $result.Value
+    }
+}
+
 function Get-CommitStatus($currentBranch, $gitRoot) {
     
     $repo = New-Object LibGit2Sharp.Repository($gitRoot)
@@ -166,13 +174,13 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
     $masterBehindAhead = ''
 
     # get remote name of the current branch, i.e. origin
-    $remoteName = git config --get "branch.$currentBranch.remote"
-        
+    $remoteName = Get-ConfigValue $repo "branch.$currentBranch.remote"
+
     if ($remoteName -eq $null) {
         $remoteName = 'origin' # Still haven't found a way to get the remote name when on the master branch
     }
     
-    $remoteBranchName = Get-RemoteBranchName $currentBranch $gitRoot $remoteName
+    $remoteBranchName = Get-RemoteBranchName $currentBranch $gitRoot $remoteName $repo
 
     if ($remoteBranchName -ne $null) {
 
@@ -219,7 +227,7 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
     }
     $fileStatus = (Get-FilesStatus $repo).TrimEnd()
     $repo.Dispose();
-    
+
     return "#darkgray#git:($masterBehindAhead#darkgray#$currentBranch$result#darkgray#)$fileStatus"
 }
 
