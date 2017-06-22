@@ -82,7 +82,7 @@ function Get-StatusString($repoStatus) {
 function SetStatusCounts-ForRepo($fileStateLocation, $resultToPopulate) {
 # Use hashtable lookup for increments instead of a bunch of if statements
     ForEach($stausEntry in $fileStateLocation) {
-        if ($stausEntry.State -eq ([LibGit2Sharp.FileStatus]::ModifiedInWorkdir -bor [LibGit2Sharp.FileStatus]::ModifiedInIndex)) { $resultToPopulate.Modified++ }
+        if ($stausEntry.State -in ([LibGit2Sharp.FileStatus]::ModifiedInWorkdir, [LibGit2Sharp.FileStatus]::ModifiedInIndex)) { $resultToPopulate.Modified++ }
         if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::DeletedFromWorkdir) { $resultToPopulate.Deleted++ }
         if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::RenamedInWorkdir) { $resultToPopulate.Renamed++ }
         if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::NewInWorkdir) { $resultToPopulate.Added++ }
