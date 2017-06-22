@@ -89,7 +89,7 @@ function SetStatusCounts-ForRepo($fileStateLocation, $resultToPopulate) {
     }
 }
 
-function Get-Staged($seed, $status, $color, $showNewFiles, $onlyShowNewFiles) {
+function Get-StatusFor($seed, $status, $color, $showNewFiles, $onlyShowNewFiles) {
     
     $result = (Get-StatusCountFragment $seed   $status.Added        'A' $color)
     $result = (Get-StatusCountFragment $result $status.Renamed      'R' $color)
@@ -127,10 +127,10 @@ function Get-FilesStatus($repo) {
 
     $status = Get-StatusString $repoStatus
 
-    $result = (Get-Staged "" $status.Conflicted Yellow)
-    $result = (Get-Staged $result $status.Staged Green)
-    $result = (Get-Staged $result $status.Unstaged Magenta)
-    $result = (Get-Staged $result $status.Untracked Gray)
+    $result = (Get-StatusFor "" $status.Conflicted Yellow)
+    $result = (Get-StatusFor $result $status.Staged Green)
+    $result = (Get-StatusFor $result $status.Unstaged Magenta)
+    $result = (Get-StatusFor $result $status.Untracked Gray)
     $result = (Get-StashStatus $result $repo)
     
     return ' ' + $result
@@ -191,13 +191,13 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
                 RemoteAhead = $remoteAheadCount;
             }
             
-            $result = Get-Staged " " $remoteCounts Green
+            $result = Get-StatusFor " " $remoteCounts Green
 
             $remoteCounts = @{
                 LocalAhead = $localAheadCount;
             }
     
-            $result = (Get-Staged $result $remoteCounts Magenta).TrimEnd()
+            $result = (Get-StatusFor $result $remoteCounts Magenta).TrimEnd()
         }
         
         # If the remote branch name isn't available it probably means it hasn't been pushed to the server yet
