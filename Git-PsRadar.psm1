@@ -74,8 +74,13 @@ function Get-StatusString($repoStatus) {
     }
 
     SetStatusCounts-ForRepo $repoStatus.Staged $results.Staged
+    SetStatusCounts-ForRepo $repoStatus.Added $results.Staged
+    SetStatusCounts-ForRepo $repoStatus.RenamedInIndex $results.Staged
+    SetStatusCounts-ForRepo $repoStatus.Removed $results.Staged
+
     SetStatusCounts-ForRepo $repoStatus.Modified $results.Unstaged
-        
+    SetStatusCounts-ForRepo $repoStatus.Missing $results.Unstaged
+           
     return $results
 }
 
@@ -83,9 +88,9 @@ function SetStatusCounts-ForRepo($fileStateLocation, $resultToPopulate) {
 # Use hashtable lookup for increments instead of a bunch of if statements
     ForEach($stausEntry in $fileStateLocation) {
         if ($stausEntry.State -in ([LibGit2Sharp.FileStatus]::ModifiedInWorkdir, [LibGit2Sharp.FileStatus]::ModifiedInIndex)) { $resultToPopulate.Modified++ }
-        if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::DeletedFromWorkdir) { $resultToPopulate.Deleted++ }
-        if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::RenamedInWorkdir) { $resultToPopulate.Renamed++ }
-        if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::NewInWorkdir) { $resultToPopulate.Added++ }
+        if ($stausEntry.State -in ([LibGit2Sharp.FileStatus]::DeletedFromWorkdir, [LibGit2Sharp.FileStatus]::DeletedFromIndex)) { $resultToPopulate.Deleted++ }
+        if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::RenamedInIndex) { $resultToPopulate.Renamed++ }
+        if ($stausEntry.State -in ([LibGit2Sharp.FileStatus]::NewInWorkdir, [LibGit2Sharp.FileStatus]::NewInIndex)) { $resultToPopulate.Added++ }
     }
 }
 
@@ -209,17 +214,17 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
         }
         
         # If the remote branch name isn't available it probably means it hasn't been pushed to the server yet
-        $remoteAheadCount = git rev-list --left-only --count "origin/master...$remoteName/$remoteBranchName"
-        $branchAheadCount = git rev-list --right-only --count "origin/master...$remoteName/$remoteBranchName"
-        
+        $remoteAheadCount = ExceptCommits $repo "$remoteName/$remoteBranchName" "origin/master"
+        $branchAheadCount = ExceptCommits $repo "origin/master" "$remoteName/$remoteBranchName"
+
         if ($remoteAheadCount -gt 0 -and $branchAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #yellow#$($arrows.leftRightArrow) #white#$branchAheadCount "  }
         elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #magenta#$($arrows.rightArrow) "}
         elseif ($branchAheadCount -gt 0) { $masterBehindAhead = "m #white#$branchAheadCount #green#$($arrows.leftArrow) "}
         
     } else {
         # If the remote branch name isn't available it probably means it hasn't been pushed to the server yet
-        $remoteAheadCount = git rev-list --left-only --count "$remoteName/master...HEAD"
-        $branchAheadCount = git rev-list --right-only --count "$remoteName/master...HEAD"
+        $remoteAheadCount = ExceptCommits $repo "HEAD" "$remoteName/master"
+        $branchAheadCount = ExceptCommits $repo "$remoteName/master" "HEAD"
         
         if ($remoteAheadCount -gt 0 -and $branchAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #cyan#$($arrows.leftRightArrow) #white#$branchAheadCount "  }
         elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #cyan#$($arrows.rightArrow) "}
@@ -229,6 +234,19 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
     $repo.Dispose();
 
     return "#darkgray#git:($masterBehindAhead#darkgray#$currentBranch$result#darkgray#)$fileStatus"
+}
+
+function ExceptCommits($repo, $leftBranch, $rightBranch) {
+    $null = .{
+        $rightCommits = $repo.Branches[$rightBranch].Commits
+        $leftCommits = $repo.Branches[$leftBranch].Commits
+
+        $set = {@()}.Invoke();
+
+        foreach($i in $rightCommits) { $set.Add($i) }
+        foreach($i in $leftCommits) { $set.Remove($i) }
+    }
+    @($set).Count
 }
 
 # Does not raise an error when outside of a git repo
