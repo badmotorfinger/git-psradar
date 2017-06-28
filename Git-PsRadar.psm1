@@ -252,7 +252,6 @@ function CachedExceptCommits($repo, $remoteBranch1, $remoteBranch2) {
         $count = ExceptCommits $repo $remoteBranch1 $remoteBranch2
                 
         $cachedResults = $remoteCacheCounts[($remoteBranch1 + $remoteBranch2)] = $count
-        write-Host "Cached value"
     }
     return $cachedResults
 }
