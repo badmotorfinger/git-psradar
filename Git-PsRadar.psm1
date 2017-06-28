@@ -258,11 +258,16 @@ function CachedExceptCommits($repo, $remoteBranch1, $remoteBranch2) {
 }
 
 function ExceptCommits($repo, $leftBranch, $rightBranch) {
+
+    $set = {@()}.Invoke();
+
     $null = .{
         $rightCommits = $repo.Branches[$rightBranch].Commits
         $leftCommits = $repo.Branches[$leftBranch].Commits
 
-        $set = {@()}.Invoke();
+        $firstLeft = ($leftCommits | select -First 1)
+        $firstRight = ($rightCommits | select -First 1)
+        if ($firstLeft -eq $firstRight) { return 0 };
 
         foreach($i in $rightCommits) { $set.Add($i) }
         foreach($i in $leftCommits) { $set.Remove($i) }
