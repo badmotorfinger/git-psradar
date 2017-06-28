@@ -396,6 +396,11 @@ You are using git-psradar for the first time. Please select the character set wh
 
 Set-ArrowCharacters
 
+Get-ChildItem -Path (Join-Path -Path $ScriptRoot -ChildPath 'Functions' -Resolve) -Filter '*.ps1' |
+            ForEach-Object { . $_.FullName }
+
+Load-LibGit2Sharp $ScriptRoot
+
 Export-ModuleMember -Function Show-GitPsRadar, Test-GitRepo -WarningAction SilentlyContinue -WarningVariable $null
 
 # Get the existing prompt function
@@ -406,17 +411,10 @@ if ($Script:originalPrompt -eq $null) {
 function global:prompt {
     
     if (Get-Command "git.exe" -ErrorAction SilentlyContinue) { 
-        $ScriptRoot = (Split-Path $MyInvocation.MyCommand.Definition)
-        if ($ScriptRoot -eq '') { $ScriptRoot = $PSScriptRoot }
         
         $currentLocation = Get-Location
         $currentPath = $currentLocation.ProviderPath
         $gitRepoPath = Test-GitRepo $currentLocation
-        
-        Get-ChildItem -Path (Join-Path -Path $ScriptRoot -ChildPath 'Functions' -Resolve) -Filter '*.ps1' |
-            ForEach-Object { . $_.FullName }
-
-        Load-LibGit2Sharp $ScriptRoot
         
         # Change the prompt as soon as we enter a git repository
         if ($gitRepoPath -ne $null -and (Show-PsRadar $gitRepoPath $currentPath)) {
