@@ -17,6 +17,11 @@
 $arrows = @{upArrow = '↑';downArrow = '↓';rightArrow = '→';leftArrow = '←'; leftRightArrow = '↔'; stash = '≡'}
 $arrows = New-Object –TypeName PSObject –Prop $arrows
 
+$ScriptRoot = (Split-Path $MyInvocation.MyCommand.Definition)
+if ($ScriptRoot -eq '') { $ScriptRoot = $PSScriptRoot }
+
+$remoteCacheCounts = @{}
+
 function Write-Chost($message = ""){
 
     if ( $message ){
@@ -212,10 +217,11 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
     
             $result = (Get-StatusFor $result $remoteCounts Magenta).TrimEnd()
         }
-        
+
         # If the remote branch name isn't available it probably means it hasn't been pushed to the server yet
-        $remoteAheadCount = ExceptCommits $repo "$remoteName/$remoteBranchName" "origin/master"
-        $branchAheadCount = ExceptCommits $repo "origin/master" "$remoteName/$remoteBranchName"
+        $remoteAheadCount = CachedExceptCommits $repo "$remoteName/$remoteBranchName" "origin/master"
+        $branchAheadCount = CachedExceptCommits $repo "origin/master" "$remoteName/$remoteBranchName"
+
 
         if ($remoteAheadCount -gt 0 -and $branchAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #yellow#$($arrows.leftRightArrow) #white#$branchAheadCount "  }
         elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #magenta#$($arrows.rightArrow) "}
@@ -234,6 +240,21 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
     $repo.Dispose();
 
     return "#darkgray#git:($masterBehindAhead#darkgray#$currentBranch$result#darkgray#)$fileStatus"
+}
+
+function CachedExceptCommits($repo, $remoteBranch1, $remoteBranch2) {
+    
+    if ($remoteBranch1 -eq $remoteBranch2) { return 0 }
+    
+    $cachedResults = $remoteCacheCounts[($remoteBranch1 + $remoteBranch2)];
+
+    if ($cachedResults -eq $null) {
+        $count = ExceptCommits $repo $remoteBranch1 $remoteBranch2
+                
+        $cachedResults = $remoteCacheCounts[($remoteBranch1 + $remoteBranch2)] = $count
+        write-Host "Cached value"
+    }
+    return $cachedResults
 }
 
 function ExceptCommits($repo, $leftBranch, $rightBranch) {
@@ -296,6 +317,7 @@ function Begin-SilentFetch($gitRepoPath) {
 
         Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
             git -C $gitRepoPath fetch --quiet
+            $remoteCacheCounts = @{}
         }
     }
 }
