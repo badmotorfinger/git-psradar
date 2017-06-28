@@ -198,8 +198,8 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
         $remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
 
         # Get remote commit count ahead of current branch
-        $remoteAheadCount = git rev-list --left-only --count $remoteName'/'$remoteBranchName...HEAD
-        $localAheadCount = git rev-list --right-only --count $remoteName'/'$remoteBranchName...HEAD
+        $remoteAheadCount = ExceptCommits $repo "HEAD" "$remoteName/$remoteBranchName"
+        $localAheadCount = ExceptCommits $repo "$remoteName/$remoteBranchName" "HEAD"
 
         $result = ""
         if ($remoteAheadCount -gt 0 -and $localAheadCount -gt 0) {
