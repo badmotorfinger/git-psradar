@@ -312,9 +312,10 @@ function Begin-SilentFetch($gitRepoPath) {
         echo $null > $lastUpdatePath
         Remove-Job -Name 'gitfetch' -Force -ErrorAction SilentlyContinue
 
+        $remoteCacheCounts.Clear()
+
         Start-Job -Name 'gitfetch' -ArgumentList $gitRepoPath, $lastUpdatePath -ScriptBlock { param($gitRepoPath, $lastUpdatePath)
             git -C $gitRepoPath fetch --quiet
-            $remoteCacheCounts = @{}
         }
     }
 }
