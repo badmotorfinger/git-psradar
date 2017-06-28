@@ -285,19 +285,12 @@ function Test-GitRepo($location) {
             $directoryInfo = ([System.IO.DirectoryInfo]$location.Path)
         }
     }
-
-    if ($directoryInfo -eq $null) { return }
     
-    if ($directoryInfo -is [System.IO.DirectoryInfo]) {
+    $actualGitLocation = [LibGit2Sharp.Repository]::Discover($location)
 
-        $gs = $directoryInfo.GetDirectories(".git");
-
-        if ($gs.Length -eq 0)
-        {
-            return Test-GitRepo($directoryInfo.Parent);
-        }
-        return $directoryInfo.FullName;
-    }
+    if ($actualGitLocation -eq $null) { return }
+    
+     (New-Object System.IO.FileInfo $actualGitLocation).Directory.Parent.FullName
 }
 
 function TimeToUpdate($lastUpdatePath) {
