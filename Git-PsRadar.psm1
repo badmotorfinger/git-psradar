@@ -246,12 +246,17 @@ function CachedExceptCommits($repo, $remoteBranch1, $remoteBranch2) {
     
     if ($remoteBranch1 -eq $remoteBranch2) { return 0 }
     
-    $cachedResults = $remoteCacheCounts[($remoteBranch1 + $remoteBranch2)];
+    # If the local version of a remote branch is updated then the cache key changes
+    # This would happen after a local branch is pushed to a remote
+    $branch1ShaTip = $repo.Branches[$remoteBranch1].Tip.Sha
+    $branch2ShaTip = $repo.Branches[$remoteBranch2].Tip.Sha
+    
+    $cachedResults = $remoteCacheCounts[($branch1ShaTip + $branch2ShaTip)];
 
     if ($cachedResults -eq $null) {
         $count = ExceptCommits $repo $remoteBranch1 $remoteBranch2
                 
-        $cachedResults = $remoteCacheCounts[($remoteBranch1 + $remoteBranch2)] = $count
+        $cachedResults = $remoteCacheCounts[($branch1ShaTip + $branch2ShaTip)] = $count
     }
     return $cachedResults
 }
