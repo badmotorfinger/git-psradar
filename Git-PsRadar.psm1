@@ -90,12 +90,12 @@ function Get-StatusString($repoStatus) {
 }
 
 function SetStatusCounts-ForRepo($fileStateLocation, $resultToPopulate) {
-# Use hashtable lookup for increments instead of a bunch of if statements
+    # Use hashtable lookup for increments instead of a bunch of if statements
     ForEach($stausEntry in $fileStateLocation) {
-        if ($stausEntry.State -in ([LibGit2Sharp.FileStatus]::ModifiedInWorkdir, [LibGit2Sharp.FileStatus]::ModifiedInIndex)) { $resultToPopulate.Modified++ }
-        if ($stausEntry.State -in ([LibGit2Sharp.FileStatus]::DeletedFromWorkdir, [LibGit2Sharp.FileStatus]::DeletedFromIndex)) { $resultToPopulate.Deleted++ }
-        if ($stausEntry.State -eq [LibGit2Sharp.FileStatus]::RenamedInIndex) { $resultToPopulate.Renamed++ }
-        if ($stausEntry.State -in ([LibGit2Sharp.FileStatus]::NewInWorkdir, [LibGit2Sharp.FileStatus]::NewInIndex)) { $resultToPopulate.Added++ }
+        if ($stausEntry.State.HasFlag([LibGit2Sharp.FileStatus]::ModifiedInWorkdir) -or $stausEntry.State.HasFlag([LibGit2Sharp.FileStatus]::ModifiedInIndex)) { $resultToPopulate.Modified++ }
+        if ($stausEntry.State.HasFlag([LibGit2Sharp.FileStatus]::DeletedFromWorkdir) -or $stausEntry.State.HasFlag([LibGit2Sharp.FileStatus]::DeletedFromIndex)) { $resultToPopulate.Deleted++ }
+        if ($stausEntry.State.HasFlag([LibGit2Sharp.FileStatus]::RenamedInIndex)) { $resultToPopulate.Renamed++ }
+        if ($stausEntry.State.HasFlag([LibGit2Sharp.FileStatus]::NewInWorkdir) -or $stausEntry.State.HasFlag([LibGit2Sharp.FileStatus]::NewInIndex)) { $resultToPopulate.Added++ }
     }
 }
 
