@@ -4,7 +4,7 @@ A (work-in-progress) PowerShell port of [git-radar](https://github.com/michaeldf
 
 ## Why
 
-The most useful prompt I have seen for working with git repositories, I just had to have it!
+[git-radar](https://github.com/michaeldfallen/git-radar) is the most useful bash prompt I have used for working with git repositories, I just had to have it in PowerShell!
 
 ### Standard prompt
 
@@ -53,6 +53,10 @@ tmp branch is locally ahead by 1 commit from origin/master (blue arrow)
 ![OriginTmpAheadOriginMaster]
 
 origin/tmp ahead by 1 commit from origin/master (green arrow). The arrow changes colour after pushing the branch to the remote.
+
+### Dependencies
+
+Git-PsRadar requires that the git executable be in your path in order for background fetch to work. This is due to a limitation in the libgit library.
 
 ### Background fetch
 
