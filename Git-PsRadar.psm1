@@ -266,12 +266,19 @@ function ExceptCommits($repo, $leftBranch, $rightBranch) {
     $set = {@()}.Invoke();
 
     $null = .{
+        
         $rightCommits = $repo.Branches[$rightBranch].Commits
         $leftCommits = $repo.Branches[$leftBranch].Commits
 
-        $firstLeft = ($leftCommits | select -First 1)
-        $firstRight = ($rightCommits | select -First 1)
-        if ($firstLeft -eq $firstRight) { return 0 };
+        try {
+
+            $firstLeft = ($leftCommits | select -First 1)
+            $firstRight = ($rightCommits | select -First 1)
+            if ($firstLeft -eq $firstRight) { return 0 };
+        
+        } catch {
+            return 0; # Exception will be thown in new repositories with no commits
+        }
 
         foreach($i in $rightCommits) { $set.Add($i) }
         foreach($i in $leftCommits) { $set.Remove($i) }
