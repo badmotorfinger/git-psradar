@@ -12,7 +12,7 @@
 RootModule = 'Git-PsRadar.psm1'
 
 # Version number of this module.
-ModuleVersion = '2.0.0'
+ModuleVersion = '2.0.1'
 
 # ID used to uniquely identify this module
 GUID = '23f8b0ef-e319-4c31-b797-e1204d0e7eb7'
@@ -31,9 +31,6 @@ Be constantly aware of changes and remote branch diversions.
 PowerShellVersion = '3.0'
 
 FileList = 'Git-PsRadar.psm1'
-
-# Functions to export from this module
-# FunctionsToExport = ''
 
 HelpInfoURI = 'https://github.com/vincpa/git-psradar'
 
