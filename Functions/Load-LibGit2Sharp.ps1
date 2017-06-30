@@ -7,7 +7,7 @@
         $GitPsRadarRoot
     )
     
-    Add-Type -Path "$GitPsRadarRoot\LibGit2Sharp.0.23.1\lib\net40\LibGit2Sharp.dll"
+    Add-Type -Path "$GitPsRadarRoot\LibGit2Sharp.0.24.0\lib\net40\LibGit2Sharp.dll"
 
     $loadLibSignature = '
         [DllImport("kernel32.dll")]
@@ -16,8 +16,8 @@
     $win32Type = Add-Type -MemberDefinition $loadLibSignature -Name Win32Utils -Namespace GitPsRadar -PassThru
 
     if ([Environment]::Is64BitProcess) {
-        $win32Type::LoadLibrary("$GitPsRadarRoot\LibGit2Sharp.NativeBinaries.1.0.164\runtimes\win7-x64\native\git2-a5cf255.dll") | Out-Null
+        $win32Type::LoadLibrary("$GitPsRadarRoot\LibGit2Sharp.NativeBinaries.1.0.185\runtimes\win7-x64\native\git2-15e1193.dll") | Out-Null
     } else {
-        $win32Type::LoadLibrary("$GitPsRadarRoot\LibGit2Sharp.NativeBinaries.1.0.164\runtimes\win7-x86\native\git2-a5cf255.dll") | Out-Null
+        $win32Type::LoadLibrary("$GitPsRadarRoot\LibGit2Sharp.NativeBinaries.1.0.185\runtimes\win7-x86\native\git2-15e1193.dll") | Out-Null
     }
 }
