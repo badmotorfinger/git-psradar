@@ -12,7 +12,7 @@
 RootModule = 'Git-PsRadar.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.1.2'
+ModuleVersion = '2.0.0'
 
 # ID used to uniquely identify this module
 GUID = '23f8b0ef-e319-4c31-b797-e1204d0e7eb7'
@@ -29,7 +29,7 @@ PowerShellVersion = '3.0'
 FileList = 'Git-PsRadar.psm1'
 
 # Functions to export from this module
-FunctionsToExport = 'Show-GitPsRadar'
+# FunctionsToExport = ''
 
 HelpInfoURI = 'https://github.com/vincpa/git-psradar'
 
@@ -39,7 +39,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('git', 'cli')
+        Tags = @('git', 'cli', 'gitlab', 'vcs')
 
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/vincpa/git-psradar/blob/master/LICENSE'
@@ -51,7 +51,7 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'Show the number of stashes in the prompt'
+        ReleaseNotes = 'This release dramatically improves performance by utilizing libgit and fixes pauses between commands. Git.exe is still required to be in your path as libgit does not support SSH.'
 
     } # End of PSData hashtable
 
