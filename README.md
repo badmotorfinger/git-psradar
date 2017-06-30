@@ -1,6 +1,6 @@
 # Git-PsRadar
 
-A (work-in-progress) PowerShell port of [git-radar](https://github.com/michaeldfallen/git-radar). A heads up display for git.
+A PowerShell port of [git-radar](https://github.com/michaeldfallen/git-radar). A heads up display for git.
 
 ## Why
 
