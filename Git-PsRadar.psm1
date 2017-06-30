@@ -336,7 +336,7 @@ Set-ArrowCharacters
 
 Load-LibGit2Sharp $ScriptRoot
 
-Export-ModuleMember -Function Show-GitPsRadar, Test-GitRepo -WarningAction SilentlyContinue -WarningVariable $null
+Export-ModuleMember -Function '' -WarningAction SilentlyContinue -WarningVariable $null
 
 # Get the existing prompt function
 if ($Script:originalPrompt -eq $null) {
