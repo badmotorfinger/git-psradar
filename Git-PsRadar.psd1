@@ -21,7 +21,11 @@ GUID = '23f8b0ef-e319-4c31-b797-e1204d0e7eb7'
 Author = 'Vince Panuccio'
 
 # Description of the functionality provided by this module
-Description = 'A heads up display for git, enabled during a PowerShell session when entering a git repositoy. A PowerShell port of git-radar.'
+Description = @'
+A colourful heads up display for git, automatically enabled when entering a git repositoy (directory). A PowerShell port of git-radar.
+
+Be constantly aware of changes and remote branch diversions.
+'@
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '3.0'
