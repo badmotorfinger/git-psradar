@@ -198,8 +198,8 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
         $remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
 
         # Get remote commit count ahead of current branch
-        $remoteAheadCount = ExceptCommits $repo "HEAD" "$remoteName/$remoteBranchName"
-        $localAheadCount = ExceptCommits $repo "$remoteName/$remoteBranchName" "HEAD"
+        $remoteAheadCount = CachedExceptCommits $repo "HEAD" "$remoteName/$remoteBranchName"
+        $localAheadCount = CachedExceptCommits $repo "$remoteName/$remoteBranchName" "HEAD"
 
         $result = ""
         if ($remoteAheadCount -gt 0 -and $localAheadCount -gt 0) {
@@ -229,8 +229,8 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
         
     } else {
         # If the remote branch name isn't available it probably means it hasn't been pushed to the server yet
-        $remoteAheadCount = ExceptCommits $repo "HEAD" "$remoteName/master"
-        $branchAheadCount = ExceptCommits $repo "$remoteName/master" "HEAD"
+        $remoteAheadCount = CachedExceptCommits $repo "HEAD" "$remoteName/master"
+        $branchAheadCount = CachedExceptCommits $repo "$remoteName/master" "HEAD"
         
         if ($remoteAheadCount -gt 0 -and $branchAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #cyan#$($arrows.leftRightArrow) #white#$branchAheadCount "  }
         elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #cyan#$($arrows.rightArrow) "}
