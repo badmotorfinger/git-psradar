@@ -345,18 +345,22 @@ if ($Script:originalPrompt -eq $null) {
 
 function global:prompt {
     
-    if (Get-Command "git.exe" -ErrorAction SilentlyContinue) { 
+    $currentLocation = Get-Location
+    $gitRepoPath = Test-GitRepo $currentLocation
+
+    if ($gitRepoPath -ne $null) {
+
+        if (Get-Command "git.exe" -ErrorAction SilentlyContinue) { 
         
-        $currentLocation = Get-Location
-        $currentPath = $currentLocation.ProviderPath
-        $gitRepoPath = Test-GitRepo $currentLocation
-        
-        # Change the prompt as soon as we enter a git repository
-        if ($gitRepoPath -ne $null -and (Show-PsRadar $gitRepoPath $currentPath)) {
-            return "> "
+            $currentPath = $currentLocation.ProviderPath
+
+            # Change the prompt as soon as we enter a git repository
+            if ($gitRepoPath -ne $null -and (Show-PsRadar $gitRepoPath $currentPath)) {
+                return "> "
+            }
+        } else {
+            Write-Host "Git-PsRadar will not work unless git.exe is in your path" -ForegroundColor Red
         }
-    } else {
-        Write-Host "Git-PsRadar will not work unless git.exe is in your path" -ForegroundColor Red
     }
     Invoke-Command $Script:originalPrompt
 }
