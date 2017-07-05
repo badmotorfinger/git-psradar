@@ -36,7 +36,7 @@ master and origin/master have diverged. We have 1 change to pull down and 3 to p
 
 ![BothRemotesDivergedAndLocalDiverged]
 
-origin/master and origin/tmp have diverged. Our local tmp branch also has 15 changes to pull and 1 to push up to origin/tmp. Essentally the arrows in the middle show branch diversion on the server and the arrows to the right show diversions between the local branch and the remote branch it's tracking.
+origin/master and origin/tmp have diverged(m 28 <-> 7 tmp). Our local tmp branch also has 15 changes to pull and 1 to push up to origin/tmp. Essentally the arrows in the middle show branch diversions on the server and the arrows to the right show diversions between the local branch and the remote branch it's tracking on the server.
 
 ![ShowStashCount]
 
