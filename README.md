@@ -26,29 +26,43 @@ remote your branch is tracking. The examples below assume you are checked out on
 
 There are 4 commits to push up, 1 modified and 3 new files not yet staged to commit
 
+&nbsp;
+
 ![RemoteBranchAhead] 
 
 There is 1 commit to pull down, 1 new and 1 modified files staged for commit
+
+&nbsp;
 
 ![BranchDiverged]
 
 master and origin/master have diverged. We have 1 change to pull down and 3 to push.
 
+&nbsp;
+
 ![BothRemotesDivergedAndLocalDiverged]
 
 origin/master and origin/tmp have diverged(m 28 <-> 7 tmp). Our local tmp branch also has 15 changes to pull and 1 to push up to origin/tmp. Essentally the arrows in the middle show branch diversions on the server and the arrows to the right show diversions between the local branch and the remote branch it's tracking on the server.
+
+&nbsp;
 
 ![ShowStashCount]
 
 There is 1 item in our stash stack
 
+&nbsp;
+
 ![OriginMasterDiveredTmp]
 
 origin/master has divered by 1 commit from our local tmp branch
 
+&nbsp;
+
 ![TmpAheadOriginMaster]
 
 tmp branch is locally ahead by 1 commit from origin/master (blue arrow)
+
+&nbsp;
 
 ![OriginTmpAheadOriginMaster]
 
