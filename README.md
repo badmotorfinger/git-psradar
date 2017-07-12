@@ -66,7 +66,7 @@ tmp branch is locally ahead by 1 commit from origin/master (blue arrow)
 
 ![OriginTmpAheadOriginMaster]
 
-origin/tmp ahead by 1 commit from origin/master (green arrow). The arrow changes colour after pushing the branch to the remote.
+origin/tmp ahead by 1 commit from origin/master (green arrow)
 
 ### Dependencies
 
