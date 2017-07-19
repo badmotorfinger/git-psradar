@@ -78,6 +78,8 @@ When entering a git repository at the command line, Git-PsRadar will place a 0 l
 
 ### PowerShell installation
 
+> If your going to load Git-PsRadar in your profile, please ensure `Import-Module Git-PsRadar` is executed after your `prompt {}` declaration. If you don't have a custom `prompt` declared then you don't need to worry.
+
 #### The easy way
 
 For those with Windows 10 and above, you can issue a `Install-Module -Name Git-PsRadar` command.
@@ -86,11 +88,11 @@ For those with Windows Vista or 7 who are using PowerShell version 3 or 4, you'l
 
 See the module listing in the [official PowerShell gallary](https://www.powershellgallery.com/packages/Git-PsRadar/)
 
-Once complete, run the command `Import-Module Git-PsRada`. For ease of use I recomend placing this command in your [PowerShell startup profile](https://technet.microsoft.com/en-us/library/bb613488(v=vs.85).aspx). Typically `$env:USERPROFILE\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
+Once complete, run the command `Import-Module Git-PsRadar`. For ease of use I recomend placing this command in your [PowerShell startup profile](https://technet.microsoft.com/en-us/library/bb613488(v=vs.85).aspx). Typically `$env:USERPROFILE\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
 
 #### The hard way  
 
-Download the Git-PsRadar.psm1 file, put it in a folder called Git-PsRadar and copy the folder it to your PowerShell module directory. `$env:USERPROFILE\Documents\WindowsPowerShell\Modules` (relative to your Documents folder). You can also extract it to another directory listed in your $env:PSModulePath. The full installation path should be `$env:USERPROFILE\Documents\WindowsPowerShell\Modules\Git-PsRadar\Git.PsRadar.psm1`.
+Download the Git-PsRadar.psm1 file and copy it into a directory called Git-PsRadar in your PowerShell module directory. It should be `$env:USERPROFILE\Documents\WindowsPowerShell\Modules\Git-PsRadar`.
 
 Assuming you want Git-PsRadar to be avilable in every PowerShell session, open your profile script located at `$env:USERPROFILE\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1` and add the following line.
 
