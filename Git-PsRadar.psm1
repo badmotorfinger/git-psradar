@@ -114,42 +114,58 @@ function Get-FilesStatus($repo) {
     return ' ' + $result
 }
 
-function Get-RemoteBranchName($currentBranch, $gitRoot, $remoteName, $repo) {
-    
-    $remoteBranchName = Get-ConfigValue $repo "branch.$currentBranch.merge"
-    
-    if ($remoteBranchName -eq $null) {
-    
-        if ($currentBranch -eq 'master') {
-            return 'master' # Need to find out how to determine the remote branch name when on the master branch
-        }
-        $head = (Get-Content -Path ("$gitRoot\.git\HEAD"))
-        $currentRef = $head.SubString($head.LastIndexOf('/') + 1)
-        if ((Test-Path -Path "$gitRoot\.git\refs\heads\$currentRef") -and 
-            (Test-Path -Path "$gitRoot\.git\refs\remotes\$remoteName\$currentRef")) {
-            return $currentRef
-        }
-    } else {
-        return $remoteBranchName
+function Get-RemoteBranchName($currentBranch, $gitRoot, $remoteName) {
+
+    if ($currentBranch -eq 'master') {
+        return 'master' # Need to find out how to determine the remote branch name when on the master branch
+    }
+
+    $head = (Get-Content -Path ("$gitRoot\.git\HEAD"))
+
+    $currentRef = $head.SubString($head.LastIndexOf('/') + 1)
+
+    if ((Test-Path -Path "$gitRoot\.git\refs\heads\$currentRef") -and
+        (Test-Path -Path "$gitRoot\.git\refs\remotes\$remoteName\$currentRef")) {
+        return $currentRef
     }
 }
 
-function Get-ConfigValue($repo, $configKey) {
+function Get-ConfigValue($repo, $configKey) { 
 
     $result = $repo.Config | ? { $_.Key -eq $configKey }
+
     if ($result -ne $null) {
-        return $result.Value
+
+        if ($result.Value -eq "."){
+        
+          return $null;
+        }
+
+        return $result.Value;
     }
+} 
+
+function Get-ParentBranch($gitRoot, $currentBranch, $parentSha) {
+
+    $files=[System.IO.Directory]::GetFiles("$gitRoot\.git\logs\refs\heads")
+
+    for($i = 0; $i -lt $files.Length;$i++){
+
+        $fileName = $files[$i]
+
+        $first = [System.IO.File]::ReadLines($fileName) | select -First 1
+
+        if ($first.Contains($parentSha)) { continue }
+
+        if ([System.IO.File]::ReadAllText($fileName).Contains($parentSha)) {
+
+            return $fileName.Substring($fileName.LastIndexOf('\') + 1)
+        }
+    }
+    return 'master'
 }
 
-function Get-CommitStatus($currentBranch, $gitRoot) {
-    
-    $repo = New-Object LibGit2Sharp.Repository($gitRoot)
-
-    $remoteAheadCount = 0
-    $localAheadCount = 0
-    $remoteBranchName = $null
-    $masterBehindAhead = ''
+function Get-BranchRemote($repo, $currentBranch) {
 
     # get remote name of the current branch, i.e. origin
     $remoteName = Get-ConfigValue $repo "branch.$currentBranch.remote"
@@ -157,84 +173,123 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
     if ($remoteName -eq $null) {
         $remoteName = 'origin' # Still haven't found a way to get the remote name when on the master branch
     }
+
+    return $remoteName
+}
+
+function Get-ParentBranchSha($gitRoot, $currentBranch) {
+    $firstLine = [System.IO.File]::ReadLines("$gitRoot\.git\logs\refs\heads\$currentBranch") | select -First 1
+    return $firstLine.SubString(41, 40)
+}
+
+function Get-CommitStatus($currentBranch, $gitRoot) {
+
+    $repo = New-Object LibGit2Sharp.Repository($gitRoot)
+
+    $remoteAheadCount = 0
+    $localAheadCount = 0
+    $remoteBranchName = $null
+    $masterBehindAhead = ''
+
+    $remoteName = Get-BranchRemote $repo $currentBranch  
+    $remoteBranchName = Get-RemoteBranchName $currentBranch $gitRoot $remoteName
+
+    $parentSha = Get-ParentBranchSha $gitRoot $currentBranch
+    $parentBranchName = Get-ParentBranch $gitRoot $currentBranch $parentSha
     
-    $remoteBranchName = Get-RemoteBranchName $currentBranch $gitRoot $remoteName $repo
+    Write-Host "RemoteName:$remoteName | RemoteBranch:$remoteBranchName | ParentBranch:$parentBranchName"
+
+    $parentBranchDisplayPrefix = $parentBranchName
+
+    if ($parentBranchName.Length -ge 2) {
+        $parentBranchDisplayPrefix = $parentBranchName.Substring(0, 2)
+    }
 
     if ($remoteBranchName -ne $null) {
 
-        # We only need the remote branch name
-        $remoteBranchName = $remoteBranchName.Substring($remoteBranchName.LastIndexOf('/') + 1)
-
         # Get remote commit count ahead of current branch
-        $remoteAheadCount = CachedExceptCommits $repo "HEAD" "$remoteName/$remoteBranchName"
-        $localAheadCount = CachedExceptCommits $repo "$remoteName/$remoteBranchName" "HEAD"
+        $branchDiff = (CachedExceptCommits $repo "HEAD" "$remoteName/$remoteBranchName").Split("`t")
+        
+        $localAheadCount = $branchDiff[0]
+        $remoteAheadCount = $branchDiff[1]
 
         $result = ""
+
         if ($remoteAheadCount -gt 0 -and $localAheadCount -gt 0) {
             $result = " #white#$remoteAheadCount#yellow#$($arrows.downArrow)$($arrows.upArrow)#white#$localAheadCount"
+
         } else {
+
             $remoteCounts = @{
                 RemoteAhead = $remoteAheadCount;
             }
-            
+
             $result = Get-StatusFor " " $remoteCounts Green
 
             $remoteCounts = @{
                 LocalAhead = $localAheadCount;
             }
-    
+
             $result = (Get-StatusFor $result $remoteCounts Magenta).TrimEnd()
         }
-
-        # If the remote branch name isn't available it probably means it hasn't been pushed to the server yet
-        $remoteAheadCount = CachedExceptCommits $repo "$remoteName/$remoteBranchName" "origin/master"
-        $branchAheadCount = CachedExceptCommits $repo "origin/master" "$remoteName/$remoteBranchName"
-
-
-        if ($remoteAheadCount -gt 0 -and $branchAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #yellow#$($arrows.leftRightArrow) #white#$branchAheadCount "  }
-        elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #magenta#$($arrows.rightArrow) "}
-        elseif ($branchAheadCount -gt 0) { $masterBehindAhead = "m #white#$branchAheadCount #green#$($arrows.leftArrow) "}
         
+        $branchDiff = (CachedExceptCommits $repo "$remoteName/$remoteBranchName" "$remoteName/$parentBranchName").Split("`t")
+        
+        $branchAheadCount = $branchDiff[0]
+        $remoteAheadCount = $branchDiff[1]
+
+        if ($remoteAheadCount -gt 0 -and $branchAheadCount -gt 0) { $masterBehindAhead = "$parentBranchDisplayPrefix #white#$remoteAheadCount #yellow#$($arrows.leftRightArrow) #white#$branchAheadCount "  }
+        elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "$parentBranchDisplayPrefix #white#$remoteAheadCount #magenta#$($arrows.rightArrow) "}
+        elseif ($branchAheadCount -gt 0) { $masterBehindAhead = "$parentBranchDisplayPrefix #white#$branchAheadCount #green#$($arrows.leftArrow) "}
+
     } else {
-        # If the remote branch name isn't available it probably means it hasn't been pushed to the server yet
-        $remoteAheadCount = CachedExceptCommits $repo "HEAD" "$remoteName/master"
-        $branchAheadCount = CachedExceptCommits $repo "$remoteName/master" "HEAD"
+        $branchDiff = (CachedExceptCommits $repo "HEAD" "$remoteName/$parentBranchName").Split("`t")
         
-        if ($remoteAheadCount -gt 0 -and $branchAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #cyan#$($arrows.leftRightArrow) #white#$branchAheadCount "  }
-        elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "m #white#$remoteAheadCount #cyan#$($arrows.rightArrow) "}
-        elseif ($branchAheadCount -gt 0) { $masterBehindAhead = "m #white#$branchAheadCount #cyan#$($arrows.leftArrow) "}
+        $branchAheadCount = $branchDiff[0]
+        $remoteAheadCount = $branchDiff[1]
+  
+        if ($remoteAheadCount -gt 0 -and $branchAheadCount -gt 0) { $masterBehindAhead = "$parentBranchDisplayPrefix #white#$remoteAheadCount #cyan#$($arrows.leftRightArrow) #white#$branchAheadCount "  }
+        elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "$parentBranchDisplayPrefix #white#$remoteAheadCount #cyan#$($arrows.rightArrow) "}
+        elseif ($branchAheadCount -gt 0) { $masterBehindAhead = "$parentBranchDisplayPrefix #white#$branchAheadCount #cyan#$($arrows.leftArrow) "}
     }
+
     $fileStatus = (Get-FilesStatus $repo).TrimEnd()
+
     $repo.Dispose();
 
     return "#darkgray#git:($masterBehindAhead#darkgray#$currentBranch$result#darkgray#)$fileStatus"
 }
 
-function CachedExceptCommits($repo, $remoteBranch1, $remoteBranch2) {
-    
-    if ($remoteBranch1 -eq $remoteBranch2) { return 0 }
-    
+function CachedExceptCommits($repo, $remoteBranch1, $remoteBranch2, $parentSha) {
+
+    if ($remoteBranch1 -eq $remoteBranch2) { return "0`t0" }
+
     # If the local version of a remote branch is updated then the cache key changes
     # This would happen after a local branch is pushed to a remote
     $branch1ShaTip = $repo.Branches[$remoteBranch1].Tip.Sha
     $branch2ShaTip = $repo.Branches[$remoteBranch2].Tip.Sha
-    
+
     $cachedResults = $remoteCacheCounts[($branch1ShaTip + $branch2ShaTip)];
 
     if ($cachedResults -eq $null) {
-        $count = ExceptCommits $repo $remoteBranch1 $remoteBranch2
-                
+        Write-Host "Cache Miss for $remoteBranch1 - $remoteBranch2"
+        
+        $count = ExceptCommits $repo $remoteBranch1 $remoteBranch2 $parentSha
+
         $cachedResults = $remoteCacheCounts[($branch1ShaTip + $branch2ShaTip)] = $count
+    } else {
+      Write-Host "Cache Hit for $remoteBranch1 - $remoteBranch2"
     }
+
     return $cachedResults
 }
 
-function ExceptCommits($repo, $leftBranch, $rightBranch) {
+function ExceptCommits($repo, $leftBranch, $rightBranch, $parentSha) {
 
-    $set = {@()}.Invoke();
+    $count = "0`t0";
 
     $null = .{
-        
+
         $rightCommits = $repo.Branches[$rightBranch].Commits
         $leftCommits = $repo.Branches[$leftBranch].Commits
 
@@ -242,16 +297,18 @@ function ExceptCommits($repo, $leftBranch, $rightBranch) {
 
             $firstLeft = ($leftCommits | select -First 1)
             $firstRight = ($rightCommits | select -First 1)
+
             if ($firstLeft -eq $firstRight) { return 0 };
-        
+
         } catch {
+
             return 0; # Exception will be thown in new repositories with no commits
         }
 
-        foreach($i in $rightCommits) { $set.Add($i) }
-        foreach($i in $leftCommits) { $set.Remove($i) }
+        $count = (git rev-list --left-right --count "$leftBranch...$rightBranch")
     }
-    @($set).Count
+
+    $count
 }
 
 # Does not raise an error when outside of a git repo
@@ -322,7 +379,7 @@ function Show-PsRadar($gitRoot, $currentPath) {
             return $true
         }
     }
-    
+
     return $false
 }
 
@@ -344,23 +401,22 @@ if ($Script:originalPrompt -eq $null) {
 }
 
 function global:prompt {
-    
+
     $currentLocation = Get-Location
+    $currentPath = $currentLocation.ProviderPath
     $gitRepoPath = Test-GitRepo $currentLocation
 
     if ($gitRepoPath -ne $null) {
 
-        if (Get-Command "git.exe" -ErrorAction SilentlyContinue) { 
-        
-            $currentPath = $currentLocation.ProviderPath
+      if (Get-Command "git.exe" -ErrorAction SilentlyContinue) {
 
-            # Change the prompt as soon as we enter a git repository
-            if ($gitRepoPath -ne $null -and (Show-PsRadar $gitRepoPath $currentPath)) {
-                return "> "
-            }
-        } else {
-            Write-Host "Git-PsRadar will not work unless git.exe is in your path" -ForegroundColor Red
-        }
+          # Change the prompt as soon as we enter a git repository
+          if ((Show-PsRadar $gitRepoPath $currentPath)) {
+              return "> "
+          }
+      } else {
+          Write-Host "Git-PsRadar will not work unless git.exe is in your path" -ForegroundColor Red
+      }
     }
     Invoke-Command $Script:originalPrompt
 }
