@@ -236,8 +236,8 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
         
         $branchDiff = (CachedExceptCommits $repo "$remoteName/$remoteBranchName" "$remoteName/$parentBranchName").Split("`t")
         
-        $remoteAheadCount = $branchDiff[0]
-        $branchAheadCount = $branchDiff[1]
+        $remoteAheadCount = $branchDiff[1]
+        $branchAheadCount = $branchDiff[0]
 
         if ($remoteAheadCount -gt 0 -and $branchAheadCount -gt 0) { $masterBehindAhead = "$parentBranchDisplayPrefix #white#$remoteAheadCount #yellow#$($arrows.leftRightArrow) #white#$branchAheadCount "  }
         elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "$parentBranchDisplayPrefix #white#$remoteAheadCount #magenta#$($arrows.rightArrow) "}
