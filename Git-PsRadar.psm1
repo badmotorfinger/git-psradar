@@ -121,12 +121,13 @@ function Get-RemoteBranchName($currentBranch, $gitRoot, $remoteName) {
     }
 
     $head = (Get-Content -Path ("$gitRoot\.git\HEAD"))
-
-    $currentRef = $head.SubString($head.LastIndexOf('/') + 1)
+    
+    # Branch names can contain paths
+    $currentRef = $head.Replace("ref: refs/heads/", "").Replace("/", "\")
 
     if ((Test-Path -Path "$gitRoot\.git\refs\heads\$currentRef") -and
         (Test-Path -Path "$gitRoot\.git\refs\remotes\$remoteName\$currentRef")) {
-        return $currentRef
+        return $currentRef.Replace("\", "/")
     }
 }
 
@@ -235,8 +236,8 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
         
         $branchDiff = (CachedExceptCommits $repo "$remoteName/$remoteBranchName" "$remoteName/$parentBranchName").Split("`t")
         
-        $branchAheadCount = $branchDiff[0]
-        $remoteAheadCount = $branchDiff[1]
+        $remoteAheadCount = $branchDiff[0]
+        $branchAheadCount = $branchDiff[1]
 
         if ($remoteAheadCount -gt 0 -and $branchAheadCount -gt 0) { $masterBehindAhead = "$parentBranchDisplayPrefix #white#$remoteAheadCount #yellow#$($arrows.leftRightArrow) #white#$branchAheadCount "  }
         elseif ($remoteAheadCount -gt 0) { $masterBehindAhead = "$parentBranchDisplayPrefix #white#$remoteAheadCount #magenta#$($arrows.rightArrow) "}
@@ -272,13 +273,9 @@ function CachedExceptCommits($repo, $remoteBranch1, $remoteBranch2, $parentSha) 
     $cachedResults = $remoteCacheCounts[($branch1ShaTip + $branch2ShaTip)];
 
     if ($cachedResults -eq $null) {
-        Write-Host "Cache Miss for $remoteBranch1 - $remoteBranch2"
-        
         $count = ExceptCommits $repo $remoteBranch1 $remoteBranch2 $parentSha
 
         $cachedResults = $remoteCacheCounts[($branch1ShaTip + $branch2ShaTip)] = $count
-    } else {
-      Write-Host "Cache Hit for $remoteBranch1 - $remoteBranch2"
     }
 
     return $cachedResults
