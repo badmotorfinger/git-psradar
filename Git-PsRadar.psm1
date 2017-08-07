@@ -116,52 +116,52 @@ function Get-FilesStatus($repo) {
 
 function Get-RemoteBranchName($currentBranch, $gitRoot, $remoteName) {
 
-    if ($currentBranch -eq 'master') {
-        return 'master' # Need to find out how to determine the remote branch name when on the master branch
-    }
+#    if ($currentBranch -eq 'master') {
+#        return 'master' # Need to find out how to determine the remote branch name when on the master branch
+#    }
 
-    $head = (Get-Content -Path ("$gitRoot\.git\HEAD"))
+    $head = [System.IO.File]::ReadAllText("$gitRoot\.git\HEAD")
     
     # Branch names can contain paths
-    $currentRef = $head.Replace("ref: refs/heads/", "").Replace("/", "\")
+    $currentRef = $head.Replace("ref: refs/heads/", "").Replace("/", "\").TrimEnd()
 
     if ((Test-Path -Path "$gitRoot\.git\refs\heads\$currentRef") -and
         (Test-Path -Path "$gitRoot\.git\refs\remotes\$remoteName\$currentRef")) {
         return $currentRef.Replace("\", "/")
     }
+    return ''
 }
 
 function Get-ConfigValue($repo, $configKey) { 
 
     $result = $repo.Config | ? { $_.Key -eq $configKey }
 
-    if ($result -ne $null) {
-
-        if ($result.Value -eq "."){
-        
-          return $null;
-        }
-
-        return $result.Value;
+    if ($result -eq $null) {
+        return ''
     }
+    return $result.Value;
 } 
 
 function Get-ParentBranch($gitRoot, $currentBranch, $parentSha) {
+    
+    # Path will not exist for new repositories
+    if ((Test-Path -Path "$gitRoot\.git\logs\refs\heads")) {
+    
+      $files=[System.IO.Directory]::GetFiles("$gitRoot\.git\logs\refs\heads")
 
-    $files=[System.IO.Directory]::GetFiles("$gitRoot\.git\logs\refs\heads")
+      for($i = 0; $i -lt $files.Length;$i++){
 
-    for($i = 0; $i -lt $files.Length;$i++){
+          $fileName = $files[$i]
 
-        $fileName = $files[$i]
+          $first = [System.IO.File]::ReadLines($fileName) | select -First 1
 
-        $first = [System.IO.File]::ReadLines($fileName) | select -First 1
+          if ($first.Contains($parentSha)) { continue }
 
-        if ($first.Contains($parentSha)) { continue }
+          if ([System.IO.File]::ReadAllText($fileName).Contains($parentSha)) {
 
-        if ([System.IO.File]::ReadAllText($fileName).Contains($parentSha)) {
-
-            return $fileName.Substring($fileName.LastIndexOf('\') + 1)
-        }
+              return $fileName.Substring($fileName.LastIndexOf('\') + 1)
+          }
+      }
     }
     return 'master'
 }
@@ -171,16 +171,26 @@ function Get-BranchRemote($repo, $currentBranch) {
     # get remote name of the current branch, i.e. origin
     $remoteName = Get-ConfigValue $repo "branch.$currentBranch.remote"
 
+    if ($remoteName -eq '.') {
+        return 'origin' # Still haven't found a way to get the remote name when on the master branch
+    }
     if ($remoteName -eq $null) {
-        $remoteName = 'origin' # Still haven't found a way to get the remote name when on the master branch
+      return ''
     }
 
     return $remoteName
 }
 
 function Get-ParentBranchSha($gitRoot, $currentBranch) {
-    $firstLine = [System.IO.File]::ReadLines("$gitRoot\.git\logs\refs\heads\$currentBranch") | select -First 1
-    return $firstLine.SubString(41, 40)
+
+    $branchPath = "$gitRoot\.git\logs\refs\heads\$currentBranch"
+    
+    # Path will not exist for new repositories
+    if ((Test-Path -Path $branchPath)) {
+      $firstLine = [System.IO.File]::ReadLines("$gitRoot\.git\logs\refs\heads\$currentBranch") | select -First 1
+      return $firstLine.SubString(41, 40)
+    }
+    return ''
 }
 
 function Get-CommitStatus($currentBranch, $gitRoot) {
@@ -206,7 +216,7 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
         $parentBranchDisplayPrefix = $parentBranchName.Substring(0, 2)
     }
 
-    if ($remoteBranchName -ne $null) {
+    if ($remoteName -ne '' -and $remoteBranchName -ne '') {
 
         # Get remote commit count ahead of current branch
         $branchDiff = (CachedExceptCommits $repo "HEAD" "$remoteName/$remoteBranchName").Split("`t")
@@ -269,6 +279,9 @@ function CachedExceptCommits($repo, $remoteBranch1, $remoteBranch2, $parentSha) 
     # This would happen after a local branch is pushed to a remote
     $branch1ShaTip = $repo.Branches[$remoteBranch1].Tip.Sha
     $branch2ShaTip = $repo.Branches[$remoteBranch2].Tip.Sha
+    
+    # New repositories
+    if ($branch1ShaTip -eq $null -or $branch2ShaTip -eq $null) { return "0`t0" }
 
     $cachedResults = $remoteCacheCounts[($branch1ShaTip + $branch2ShaTip)];
 
@@ -286,7 +299,9 @@ function ExceptCommits($repo, $leftBranch, $rightBranch, $parentSha) {
     $count = "0`t0";
 
     $null = .{
-
+        $rightBranch = $rightBranch.TrimStart('/')
+        $leftBranch = $leftBranch.TrimStart('/')
+        
         $rightCommits = $repo.Branches[$rightBranch].Commits
         $leftCommits = $repo.Branches[$leftBranch].Commits
 
