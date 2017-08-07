@@ -114,19 +114,17 @@ function Get-FilesStatus($repo) {
     return ' ' + $result
 }
 
+# Needs to get actual remote branch name when the local name you're tracking is
+# different from the remote branch nbame
 function Get-RemoteBranchName($currentBranch, $gitRoot, $remoteName) {
-
-#    if ($currentBranch -eq 'master') {
-#        return 'master' # Need to find out how to determine the remote branch name when on the master branch
-#    }
 
     $head = [System.IO.File]::ReadAllText("$gitRoot\.git\HEAD")
     
     # Branch names can contain paths
     $currentRef = $head.Replace("ref: refs/heads/", "").Replace("/", "\").TrimEnd()
 
-    if ((Test-Path -Path "$gitRoot\.git\refs\heads\$currentRef") -and
-        (Test-Path -Path "$gitRoot\.git\refs\remotes\$remoteName\$currentRef")) {
+    if ((Test-Path -Path "$gitRoot\.git\logs\refs\heads\$currentRef") -and
+        (Test-Path -Path "$gitRoot\.git\logs\refs\remotes\$remoteName\$currentRef")) {
         return $currentRef.Replace("\", "/")
     }
     return ''
