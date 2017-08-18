@@ -151,7 +151,9 @@ function Get-ParentBranch($gitRoot, $currentBranch, $parentSha) {
 
           $fileName = $files[$i]
 
-          $first = [System.IO.File]::ReadLines($fileName) | select -First 1
+          # Real all lines even though we only need the first because sometimes the file is left open
+          # git fails temporarily
+          $first = [System.IO.File]::ReadAllLines($fileName) | select -First 1
 
           if ($first.Contains($parentSha)) { continue }
 
@@ -185,7 +187,7 @@ function Get-ParentBranchSha($gitRoot, $currentBranch) {
     
     # Path will not exist for new repositories
     if ((Test-Path -Path $branchPath)) {
-      $firstLine = [System.IO.File]::ReadLines("$gitRoot\.git\logs\refs\heads\$currentBranch") | select -First 1
+      $firstLine = [System.IO.File]::ReadAllLines("$gitRoot\.git\logs\refs\heads\$currentBranch") | select -First 1
       return $firstLine.SubString(41, 40)
     }
     return ''
