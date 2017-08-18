@@ -166,17 +166,29 @@ function Get-ParentBranch($gitRoot, $currentBranch, $parentSha) {
     return 'master'
 }
 
-function Get-BranchRemote($repo, $currentBranch) {
+function Get-BranchRemote($repo, $currentBranch, $gitRoot) {
 
     # get remote name of the current branch, i.e. origin
     $remoteName = Get-ConfigValue $repo "branch.$currentBranch.remote"
 
-    if ($remoteName -eq '.') {
-        return 'origin' # Still haven't found a way to get the remote name when on the master branch
+    if ($remoteName -eq $null -or $remoteName.Trim() -eq '' -or $remoteName -eq '.') {
+        
+        # To handle branch names with slashes such as 'features/foo-branch' or 'work/bugs/foo-branch'
+        $parentBranchLastIndex = $currentBranch.LastIndexOf('/')
+        $parentBranchFolder = ''
+        if ($parentBranchLastIndex -gt 0) { $parentBranchFolder = $currentBranch.SubString(0, $parentBranchLastIndex) }
+        $currentBranch = $currentBranch.SubString($currentBranch.LastIndexOf('/') + 1)
+
+        $file = [System.IO.Directory]::GetFiles("$gitRoot\.git\logs\refs\remotes", $currentBranch, 'AllDirectories')
+        if ($file.Length -gt 0) {
+            $fullName = (get-item $file[0]).Directory.FullName
+            
+            if ($parentBranchLastIndex -gt 0) { $fullName = $fullName.Substring(0, $fullName.Length - $parentBranchFolder.Length -1) }
+
+            return $fullName.Substring($fullName.LastIndexOf('\') + 1)
+        }
     }
-    if ($remoteName -eq $null) {
-      return ''
-    }
+    
 
     return $remoteName
 }
@@ -202,7 +214,7 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
     $remoteBranchName = $null
     $masterBehindAhead = ''
 
-    $remoteName = Get-BranchRemote $repo $currentBranch  
+    $remoteName = Get-BranchRemote $repo $currentBranch $gitRoot
     $remoteBranchName = Get-RemoteBranchName $currentBranch $gitRoot $remoteName
 
     $parentSha = Get-ParentBranchSha $gitRoot $currentBranch
