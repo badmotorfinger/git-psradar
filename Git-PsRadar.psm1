@@ -186,6 +186,8 @@ function Get-BranchRemote($repo, $currentBranch, $gitRoot) {
             if ($parentBranchLastIndex -gt 0) { $fullName = $fullName.Substring(0, $fullName.Length - $parentBranchFolder.Length -1) }
 
             return $fullName.Substring($fullName.LastIndexOf('\') + 1)
+        } else {
+            return ''
         }
     }
     
