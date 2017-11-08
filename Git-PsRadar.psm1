@@ -238,8 +238,6 @@ function Get-CommitStatus($currentBranch, $gitRoot) {
     $parentSha = Get-ParentBranchSha $gitRoot $currentBranch
     $parentBranchName = Get-ParentBranch $gitRoot $currentBranch $parentSha
     
-    Write-Host "RemoteName:$remoteName | RemoteBranch:$remoteBranchName | ParentBranch:$parentBranchName"
-
     $parentBranchDisplayPrefix = $parentBranchName
 
     if ($parentBranchName.Length -ge 2) {
