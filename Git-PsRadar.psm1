@@ -21,6 +21,8 @@ $ScriptRoot = (Split-Path $MyInvocation.MyCommand.Definition)
 if ($ScriptRoot -eq '') { $ScriptRoot = $PSScriptRoot }
 
 $remoteCacheCounts = @{}
+$brandRemoteCache = @{}
+
 
 function Get-StatusString($repoStatus) {
     
@@ -118,6 +120,7 @@ function Get-FilesStatus($repo) {
 # different from the remote branch nbame
 function Get-RemoteBranchName($currentBranch, $gitRoot, $remoteName) {
 
+
     $head = [System.IO.File]::ReadAllText("$gitRoot\.git\HEAD")
     
     # Branch names can contain paths
@@ -144,7 +147,7 @@ function Get-ParentBranch($gitRoot, $currentBranch, $parentSha) {
     
     # Path will not exist for new repositories
     if ((Test-Path -Path "$gitRoot\.git\logs\refs\heads")) {
-    
+
       $files=[System.IO.Directory]::GetFiles("$gitRoot\.git\logs\refs\heads")
 
       for($i = 0; $i -lt $files.Length;$i++){
@@ -166,7 +169,11 @@ function Get-ParentBranch($gitRoot, $currentBranch, $parentSha) {
     return 'master'
 }
 
+
 function Get-BranchRemote($repo, $currentBranch, $gitRoot) {
+    
+    $cacheResult = $brandRemoteCache.Item($currentBranch)
+    if ($cacheResult -ne $null) { return $cacheResult }
 
     # get remote name of the current branch, i.e. origin
     $remoteName = Get-ConfigValue $repo "branch.$currentBranch.remote"
@@ -177,21 +184,30 @@ function Get-BranchRemote($repo, $currentBranch, $gitRoot) {
         $parentBranchLastIndex = $currentBranch.LastIndexOf('/')
         $parentBranchFolder = ''
         if ($parentBranchLastIndex -gt 0) { $parentBranchFolder = $currentBranch.SubString(0, $parentBranchLastIndex) }
-        $currentBranch = $currentBranch.SubString($currentBranch.LastIndexOf('/') + 1)
+        $newCurrentBranchName = $currentBranch.SubString($currentBranch.LastIndexOf('/') + 1)
 
-        $file = [System.IO.Directory]::GetFiles("$gitRoot\.git\logs\refs\remotes", $currentBranch, 'AllDirectories')
-        if ($file.Length -gt 0) {
-            $fullName = (get-item $file[0]).Directory.FullName
+        
+        $remotes = "$gitRoot\.git\logs\refs\remotes"
+
+        if ((Test-Path $remotes)) {
+
+            $file = [System.IO.Directory]::GetFiles($remotes, $newCurrentBranchName, 'AllDirectories')
+
+            if ($file.Length -gt 0) {
+                $fullName = (get-item $file[0]).Directory.FullName
             
-            if ($parentBranchLastIndex -gt 0) { $fullName = $fullName.Substring(0, $fullName.Length - $parentBranchFolder.Length -1) }
+                if ($parentBranchLastIndex -gt 0) { $fullName = $fullName.Substring(0, $fullName.Length - $parentBranchFolder.Length -1) }
 
-            return $fullName.Substring($fullName.LastIndexOf('\') + 1)
+                $remoteName = $fullName.Substring($fullName.LastIndexOf('\') + 1)
+            } else {
+                $remoteName = ''
+            }
         } else {
-            return ''
+            $remoteName = ''
         }
     }
     
-
+    $brandRemoteCache.Add($currentBranch, $remoteName)
     return $remoteName
 }
 
