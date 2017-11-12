@@ -12,7 +12,7 @@
 RootModule = 'Git-PsRadar.psm1'
 
 # Version number of this module.
-ModuleVersion = '2.0.1'
+ModuleVersion = '2.0.2'
 
 # ID used to uniquely identify this module
 GUID = '23f8b0ef-e319-4c31-b797-e1204d0e7eb7'
@@ -52,7 +52,7 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'This release dramatically improves performance by utilizing libgit and fixes pauses between commands. Git.exe is still required to be in your path as libgit does not support SSH.'
+        ReleaseNotes = 'This release re-introduces the usage of git.exe to determine branch diversions and also uses libgit for other tasks. Git.exe is also required to be in your path as libgit does not support SSH.'
 
     } # End of PSData hashtable
 
