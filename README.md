@@ -6,6 +6,8 @@ A PowerShell port of [git-radar](https://github.com/michaeldfallen/git-radar). A
 
 [git-radar](https://github.com/michaeldfallen/git-radar) is the most useful bash prompt I have used for working with git repositories, I just had to have it in PowerShell!
 
+I'd love to bring more features to this module so if you have some spare time and find it useful, help is always welcome.
+
 ### Standard prompt
 
 The Git Radar prompt will automatically toggle after you import the `Git-PsRadar` module in to your session and `cd` in to a git repository. The example below shows the mater branch with 1 modified file staged for commit, 1 deleted, 1 modified and 2 new files not yet staged for commit.
